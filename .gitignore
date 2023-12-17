@@ -3,3 +3,5 @@ venv
 userdata
 __pycache__
 unknown
+**/__pycache__
+.vscode
