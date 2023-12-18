@@ -4,10 +4,11 @@ from difflib import SequenceMatcher
 import cv2
 import numpy
 
+from bot.recog.image_saver import save_img_to_dir_by_pHash
 from bot.recog.image_matcher import image_match, compare_color_equal
 from bot.recog.ocr import ocr_line, find_similar_text
 from module.umamusume.asset.race_data import RACE_LIST
-from module.umamusume.context import UmamusumeContext, SupportCardInfo
+from module.umamusume.context import UmamusumeContext, SupportCardInfo, BattleInfo
 from module.umamusume.asset import *
 from module.umamusume.define import *
 from module.umamusume.script.cultivate_task.const import DATE_YEAR, DATE_MONTH
@@ -75,6 +76,32 @@ def parse_cultivate_main_menu(ctx: UmamusumeContext, img):
     parse_debut_race(ctx, img)
     ctx.cultivate_detail.turn_info.parse_main_menu_finish = True
 
+def parse_cultive_support_card_detail(ctx: UmamusumeContext, img):
+    
+    base_x = 50
+    size_x = 196
+    inc_x = 212
+
+    base_y = 276
+    size_y = 260
+    inc_y = 272
+
+    for x in range(3):
+        for y in range(2):
+            card_img = img[base_y + y * inc_y:base_y + y * inc_y + size_y,
+                           base_x + x * inc_x:base_x + x * inc_x + size_x]
+
+            level_img = card_img[230:260,100:195]
+            level_text = ocr_line(level_img)
+            level_text = re.sub("\\D", "", level_text)
+            if level_text == "":
+                level_text = "30"
+
+            support_img = card_img[40:200,30:166]
+
+            save_img_to_dir_by_pHash(support_img,"resource/umamusume/support_card/big")
+
+    
 
 def parse_debut_race(ctx: UmamusumeContext, img):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -233,6 +260,8 @@ def parse_training_support_card(ctx: UmamusumeContext, img, train_type: Training
         # 判断支援卡类型
         support_card_type = SupportCardType.SUPPORT_CARD_TYPE_UNKNOWN
         support_card_icon = cv2.cvtColor(support_card_icon, cv2.COLOR_RGB2GRAY)
+
+        
         if image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_SPEED).find_match:
             support_card_type = SupportCardType.SUPPORT_CARD_TYPE_SPEED
         elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_STAMINA).find_match:
@@ -246,6 +275,11 @@ def parse_training_support_card(ctx: UmamusumeContext, img, train_type: Training
         elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_FRIEND).find_match:
             support_card_type = SupportCardType.SUPPORT_CARD_TYPE_FRIEND
         if support_card_favor_process is not SupportCardFavorLevel.SUPPORT_CARD_FAVOR_LEVEL_UNKNOWN:
+            
+            support_card_head = support_card_icon[15:80,35:70]
+
+            save_img_to_dir_by_pHash(support_card_head,"resource/umamusume/support_card/small")
+
             info = SupportCardInfo(card_type=support_card_type,
                                    favor=support_card_favor_process,
                                    has_event=support_card_event_available)
@@ -294,6 +328,14 @@ def parse_training_result(ctx: UmamusumeContext, img, train_type: TrainingType):
     skill_point_incr_text = ocr_line(sub_img_skill_point_incr)
     skill_point_incr_text = re.sub("\\D", "", skill_point_incr_text)
 
+    sub_img_failed_rate = img[910:960,39:690]
+    failed_rate_text = ocr_line(sub_img_failed_rate)
+    result = re.search(r'\d+',failed_rate_text)
+    if result:
+        failed_rate_text = result.group()
+    else:
+        log.warn("训练失败率识别失败")
+
     if speed_incr_text != "":
         ctx.cultivate_detail.turn_info.training_info_list[train_type.value - 1].speed_incr = int(
             speed_incr_text)
@@ -312,6 +354,9 @@ def parse_training_result(ctx: UmamusumeContext, img, train_type: TrainingType):
     if skill_point_incr_text != "":
         ctx.cultivate_detail.turn_info.training_info_list[train_type.value - 1].skill_point_incr = int(
             skill_point_incr_text)
+    if failed_rate_text != "":
+        ctx.cultivate_detail.turn_info.training_info_list[train_type.value - 1].failed_percent = int(
+            failed_rate_text)
 
 
 def find_support_card(ctx: UmamusumeContext, img):
@@ -350,21 +395,27 @@ def find_support_card(ctx: UmamusumeContext, img):
 
 
 # 111 237 480 283
-def parse_cultivate_event(ctx: UmamusumeContext, img) -> (str, list[int]):
+def parse_cultivate_event(ctx: UmamusumeContext, img ,parse_selection : bool = False) -> (str, list[int]):
     event_name_img = img[237:283, 111:480]
     event_name = ocr_line(event_name_img)
     event_selector_list = []
+    event_selection_list = []
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     while True:
         match_result = image_match(img, REF_SELECTOR)
         if match_result.find_match:
             event_selector_list.append(match_result.center_point)
+            if parse_selection:
+                event_selection_img = img[match_result.matched_area[0][1]:match_result.matched_area[1][1],
+                match_result.matched_area[1][0]:700]
+                event_selection = ocr_line(event_selection_img)
+                event_selection_list.append(event_selection)
             img[match_result.matched_area[0][1]:match_result.matched_area[1][1],
             match_result.matched_area[0][0]:match_result.matched_area[1][0]] = 0
         else:
             break
     event_selector_list.sort(key=lambda x: x[1])
-    return event_name, event_selector_list
+    return event_name, event_selector_list, event_selection_list
 
 
 def find_race(ctx: UmamusumeContext, img, race_id: int = 0) -> bool:
@@ -534,3 +585,31 @@ def parse_factor(ctx: UmamusumeContext):
             break
     ctx.cultivate_detail.parse_factor_done = True
     ctx.task.detail.cultivate_result['factor_list'] = factor_list
+
+def parse_battle_history(img) -> list:
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    battle_history_list = []
+    while True:
+        match_result = image_match(img, REF_BATTLE_HISTORY_DETECT_LABEL)
+        if match_result.find_match:
+            pos = match_result.matched_area
+            battle_history_img = img[pos[0][1] - 80:pos[1][1] + 5, 20:700]
+            battle_name_img = battle_history_img[0:40, 0:500]
+            battle_name = ocr_line(battle_name_img)
+            rank_img = battle_history_img[0:100, 500:720]
+            rank_text = ocr_line(rank_img)
+            rank_text = re.sub("\\D", "", rank_text)
+            if rank_text == "":
+                rank_text = "0"
+            rank = int(rank_text)
+            battle_result = BattleInfo()
+            battle_result.name = battle_name
+            battle_result.rank = rank
+            battle_history_list.append(battle_result)
+            img[pos[0][1] - 80:pos[1][1] + 5,20:700] = 0
+        
+        else:
+            break
+    
+    return battle_history_list
+

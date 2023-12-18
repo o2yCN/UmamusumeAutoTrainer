@@ -17,6 +17,10 @@ CULTIVATE_MEDIC_SUMMER = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, 
 CULTIVATE_TRIP = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(355, 1130), "外出", None)
 CULTIVATE_RACE = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(564, 1127), "比赛", None)
 CULTIVATE_RACE_SUMMER = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(460, 1125), "比赛-夏合宿", None)
+CULTIVATE_MENU_OPEN = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(640,1240), "菜单", None)
+
+MENU_DECK_INFO = ClickPoint(ClickPointType.CLICK_POINT_TYPE_TEMPLATE, BTN_TRAIN_DECK_INFO, None, "菜单-编成信息", None)
+MENU_BATTLE_HISTORY = ClickPoint(ClickPointType.CLICK_POINT_TYPE_TEMPLATE, BTN_BATTLE_HISTORY, None, "菜单-战绩", None)
 
 RETURN_TO_CULTIVATE_MAIN_MENU = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(90, 1230), "返回训练主界面", None)
 CULTIVATE_GOAL_RACE_INTER_1 = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(508, 1081), "进入生涯赛详细界面", None)
@@ -103,4 +107,10 @@ TO_RECOVER_TP = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coo
 USE_TP_DRINK = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(610, 320), "使用tp饮料", None)
 USE_TP_DRINK_CONFIRM = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(525, 920), "使用tp饮料-确认", None)
 USE_TP_DRINK_RESULT_CLOSE = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(360, 835), "回复完成-关闭", None)
+
+RECOVER_TP_USE_CARROT = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(610, 175), "使用宝石", None)
+RECOVER_TP_USE_CARROT_ADD = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(525, 670), "增加宝石", None)
+RECOVER_TP_USE_CARROT_CONFIRM = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(525, 960), "使用宝石", None)
+RECOVER_TP_USE_CARROT_RESULT_CLOSE = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(400, 835), "使用宝石", None)
+
 SELECT_DIFFICULTY = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(517, 1176), "确认选择难度", None)

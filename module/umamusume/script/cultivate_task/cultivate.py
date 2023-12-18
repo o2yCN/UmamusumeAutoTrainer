@@ -5,7 +5,7 @@ import numpy as np
 
 from bot.base.task import TaskStatus, EndTaskReason
 from module.umamusume.asset.point import *
-from module.umamusume.context import TurnInfo
+from module.umamusume.context import TurnInfo,BattleInfo
 from module.umamusume.script.cultivate_task.const import SKILL_LEARN_PRIORITY_LIST
 from module.umamusume.script.cultivate_task.event.manifest import get_event_choice
 from module.umamusume.script.cultivate_task.parse import *
@@ -31,7 +31,16 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
     # 解析主界面
     if not ctx.cultivate_detail.turn_info.parse_main_menu_finish:
         parse_cultivate_main_menu(ctx, img)
-
+        
+    # if not ctx.cultivate_detail.parse_battle_info_done:
+    #     ctx.ctrl.click_by_point(CULTIVATE_MENU_OPEN)
+    #     return
+    
+    # 解析支援卡信息
+    # if len(ctx.cultivate_detail.support_card_data) != 6:
+    #     ctx.ctrl.click_by_point(CULTIVATE_MENU_OPEN)
+    #     return
+    
     has_extra_race = len([i for i in ctx.cultivate_detail.extra_race_list if str(i)[:2]
                           == str(ctx.cultivate_detail.turn_info.date)]) != 0
 
@@ -78,6 +87,41 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
             else:
                 ctx.ctrl.click_by_point(CULTIVATE_RACE)
 
+def script_cultivate_menu(ctx: UmamusumeContext):
+    # if ctx.cultivate_detail.parse_battle_info_done:
+    #     ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+    # else:
+    #     time.sleep(0.5)
+    #     ctx.ctrl.click_by_point(MENU_BATTLE_HISTORY)
+    if len(ctx.cultivate_detail.support_card_data) <6:
+        ctx.ctrl.click_by_point(MENU_DECK_INFO)
+    else:
+        ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+
+def script_cultivate_battle_history(ctx: UmamusumeContext):
+    if ctx.cultivate_detail.parse_battle_info_done:
+        ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+    else:
+        battle_history = []
+        while True:
+            img = ctx.ctrl.get_screen()
+            battle_info = parse_battle_history(img)
+            for info in battle_info:
+                if info not in battle_history:
+                    battle_history.append(info)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        
+            if compare_color_equal(img[1100, 695], [214, 212, 221]):
+                ctx.ctrl.swipe(x1=20, y1=1000, x2=20, y2=850, duration=1000, name="")
+                time.sleep(1)
+            else:
+                break
+        
+        ctx.cultivate_detail.parse_battle_info_done = True
+        ctx.cultivate_detail.battle_info = battle_history
+
+def script_cultivate_training_card_info(ctx:UmamusumeContext):
+    pass
 
 def script_cultivate_training_select(ctx: UmamusumeContext):
     if ctx.cultivate_detail.turn_info is None:
@@ -153,6 +197,9 @@ def script_support_card_select(ctx: UmamusumeContext):
     if image_match(img, REF_CULTIVATE_SUPPORT_CARD_EMPTY).find_match:
         ctx.ctrl.click_by_point(TO_FOLLOW_SUPPORT_CARD_SELECT)
         return
+    
+    parse_cultive_support_card_detail(ctx, img)
+
     ctx.ctrl.click_by_point(TO_CULTIVATE_PREPARE_NEXT)
 
 
@@ -183,24 +230,38 @@ def script_cultivate_final_check(ctx: UmamusumeContext):
 
 def script_cultivate_event(ctx: UmamusumeContext):
     img = ctx.ctrl.get_screen()
-    event_name, selector_list = parse_cultivate_event(ctx, img)
+    selection_list = []
+    event_name, selector_list, selection_list = parse_cultivate_event(ctx, img)
     log.debug("当前事件：%s", event_name)
     if len(selector_list) != 0 and len(selector_list) != 1:
         time.sleep(0.5)
         # 避免出现选项残缺的情况，这里重新解析一次
         img = ctx.ctrl.get_screen()
-        event_name, selector_list = parse_cultivate_event(ctx, img)
+        event_name, selector_list, selection_list = parse_cultivate_event(ctx, img, True)
         choice_index = get_event_choice(ctx, event_name)
+        if len(selector_list) == 0 and len(selector_list) == 1:
+            return
         # 意外情况容错
         if choice_index - 1 > len(selector_list):
             choice_index = 1
+        if choice_index - 1 > len(selector_list):
+            choice_index = 0
+        if choice_index - 1 > len(selector_list):
+            return
         ctx.ctrl.click(selector_list[choice_index - 1][0], selector_list[choice_index - 1][1],
                        "事件选项-" + str(choice_index))
     else:
         log.debug("未出现选项")
+    
+    if event_name and event_name != "":
+        # write event data info:
+        with open('resource/umamusume/event/%s.json'%event_name,'w+',encoding='utf-8') as f:
+            f.write(json.dumps({
+                u"name":event_name,
+                u"selection": selection_list,
+            },ensure_ascii=False))
 
-
-def script_cultivate_goal_race(ctx: UmamusumeContext):
+def script_cultivate_goal_race(ctx: UmamusumeContext):    
     img = ctx.current_screen
     current_date = parse_date(img, ctx)
     if current_date == -1:
@@ -293,6 +354,26 @@ def script_in_race(ctx: UmamusumeContext):
 
 
 def script_cultivate_race_result(ctx: UmamusumeContext):
+    img = cv2.cvtColor(ctx.current_screen, cv2.COLOR_BGR2GRAY)
+    rank_img = img[200:400,100:300]
+    rank_text = ocr_line(rank_img)
+    rank_text = re.sub("\\D", "", rank_text)
+    if rank_text == "":
+        rank_text = "0"
+
+    rank = int(rank_text)
+
+    match_info = img[500:540,50:650]
+    match_info_text = ocr_line(match_info)
+
+    log.debug("%s : 第%s名",match_info_text,rank_text)
+
+    battleinfo = BattleInfo()
+    battleinfo.name = match_info_text
+    battleinfo.rank = rank
+
+    ctx.cultivate_detail.battle_info.append(battleinfo)
+
     ctx.ctrl.click_by_point(RACE_RESULT_CONFIRM)
 
 
@@ -440,6 +521,7 @@ def script_cultivate_learn_skill(ctx: UmamusumeContext):
 
 
 def script_not_found_ui(ctx: UmamusumeContext):
+    # save_img_to_dir_by_pHash(ctx.ctrl.get_screen(),"resource/umamusume/unknown/ui")
     ctx.ctrl.click(719, 1, "")
 
 

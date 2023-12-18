@@ -5,6 +5,15 @@ import bot.base.log as logger
 
 log = logger.get_logger(__name__)
 
+class SupportCardData:
+    name: str
+    id: int
+    card_type: SupportCardType
+
+    def __init__(self, name: str, id: int, card_type: SupportCardType):
+        self.name = name
+        self.id = id
+        self.card_type = card_type
 
 class SupportCardInfo:
     name: str
@@ -22,7 +31,6 @@ class SupportCardInfo:
         self.favor = favor
         self.has_event = has_event
 
-
 class TrainingInfo:
     support_card_info_list: list[SupportCardInfo]
     speed_incr: int
@@ -31,6 +39,7 @@ class TrainingInfo:
     will_incr: int
     intelligence_incr: int
     skill_point_incr: int
+    failed_percent: int
 
     def __init__(self):
         self.speed_incr = 0
@@ -39,6 +48,7 @@ class TrainingInfo:
         self.will_incr = 0
         self.intelligence_incr = 0
         self.skill_point_incr = 0
+        self.failed_percent = 0
         self.support_card_info_list = []
 
     def log_training_info(self):
@@ -88,6 +98,13 @@ class TurnOperation:
         if self.turn_operation_type == TurnOperationType.TURN_OPERATION_TYPE_TRAINING:
             log.info("训练类型：%s", self.training_type.name)
 
+class BattleInfo:
+    name: str
+    rank: int
+
+    def __init__(self):
+        self.name = ""
+        self.rank = 0
 
 class TurnInfo:
     date: int
@@ -158,6 +175,11 @@ class CultivateContextDetail:
     allow_recover_tp: bool
     parse_factor_done: bool
     extra_weight: list
+    battle_info : list[BattleInfo]
+    parse_battle_info_done: bool
+    support_card_data : list[SupportCardData]
+
+    recover_tp_carrot_count: int
 
     def __init__(self):
         self.expect_attribute = None
@@ -175,6 +197,10 @@ class CultivateContextDetail:
         self.allow_recover_tp = False
         self.parse_factor_done = False
         self.extra_weight = []
+        self.battle_info = []
+        self.parse_battle_info_done = False
+        self.support_card_data = []
+        self.recover_tp_carrot_count = 3
 
     def reset_skill_learn(self):
         self.learn_skill_done = False

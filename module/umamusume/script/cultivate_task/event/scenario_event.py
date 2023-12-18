@@ -20,3 +20,11 @@ def scenario_event_2(ctx: UmamusumeContext) -> int:
         return 3
     else:
         return 1
+
+
+# 自主训练
+def extra_train_2(ctx: UmamusumeContext) -> int:
+    if ctx.cultivate_detail.turn_info.remain_stamina >= 90:
+        return 1
+    else:
+        return 2

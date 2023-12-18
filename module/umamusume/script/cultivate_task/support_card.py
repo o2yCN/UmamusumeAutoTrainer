@@ -105,4 +105,11 @@ SCORE_DICT: dict = {
     },
 }
 
+UMAMUSUME_BIG_SUPPORT_CARD_TEMPLATE_PATH = "/umamusume/support_card/big"
+UMAMUSUME_MIDDLE_SUPPORT_CARD_TEMPLATE_PATH = "/umamusume/support_card/middle"
+UMAMUSUME_SMALL_SUPPORT_CARD_TEMPLATE_PATH = "/umamusume/support_card/small"
 
+
+
+def init_database():
+    pass

@@ -2,7 +2,7 @@ from typing import Union
 
 from bot.recog.ocr import find_similar_text
 from module.umamusume.context import UmamusumeContext
-from module.umamusume.script.cultivate_task.event.scenario_event import scenario_event_1, scenario_event_2
+from module.umamusume.script.cultivate_task.event.scenario_event import scenario_event_1, scenario_event_2, extra_train_2
 import bot.base.log as logger
 
 log = logger.get_logger(__name__)
@@ -11,7 +11,12 @@ event_map: dict[str, Union[callable, int]] = {
     "安心～针灸师，登☆场": 5,
     "新年的抱负": scenario_event_1,
     "新年参拜": scenario_event_2,
-    "新年祈福": scenario_event_2
+    "新年祈福": scenario_event_2,
+    "追加的自主训练": extra_train_2,
+    "怎么办":2,
+    "严厉而又仁慈":2,
+    "啊，故乡":2,
+    "大胃王可不是浪得虚名":2,
 }
 
 event_name_list: list[str] = [*event_map]

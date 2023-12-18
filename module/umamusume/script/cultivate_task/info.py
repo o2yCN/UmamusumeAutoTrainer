@@ -5,6 +5,7 @@ import cv2
 from bot.base.task import TaskStatus, EndTaskReason
 from module.umamusume.task import EndTaskReason as UEndTaskReason
 from bot.recog.image_matcher import image_match
+from bot.recog.image_saver import save_img_to_dir_by_pHash
 from bot.recog.ocr import ocr_line, find_similar_text
 from module.umamusume.asset.point import *
 from module.umamusume.asset.ui import INFO
@@ -42,7 +43,10 @@ TITLE = [
     "活动剧情解锁",
     "确认",
     "回复训练值",
-    "选择养成难度"
+    "选择养成难度",
+    "公告",
+    "菜单",
+    "战绩",
 ]
 
 
@@ -57,6 +61,7 @@ def script_info(ctx: UmamusumeContext):
         log.debug(title_text)
         title_text = find_similar_text(title_text, TITLE, 0.8)
         if title_text == "":
+            save_img_to_dir_by_pHash(img,"resource/unknown/info")
             log.warning("未知的选项框")
             return
         if title_text == TITLE[0]:
@@ -133,16 +138,38 @@ def script_info(ctx: UmamusumeContext):
         if title_text == TITLE[26]:
             if not ctx.cultivate_detail.allow_recover_tp:
                 ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.TP_NOT_ENOUGH)
+            elif ctx.cultivate_detail.recover_tp_carrot_count <= 0:
+                ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.TP_NOT_ENOUGH)
             else:
                 ctx.ctrl.click_by_point(TO_RECOVER_TP)
         if title_text == TITLE[27]:
-            if image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_1).find_match:
-                ctx.ctrl.click_by_point(USE_TP_DRINK)
-            elif image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_2).find_match:
-                ctx.ctrl.click_by_point(USE_TP_DRINK_CONFIRM)
-            elif image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_3).find_match:
-                ctx.ctrl.click_by_point(USE_TP_DRINK_RESULT_CLOSE)
+            # if image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_1).find_match:
+            #     ctx.ctrl.click_by_point(USE_TP_DRINK)
+            # elif image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_2).find_match:
+            #     ctx.ctrl.click_by_point(USE_TP_DRINK_CONFIRM)
+            # elif image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_3).find_match:
+            #     ctx.ctrl.click_by_point(USE_TP_DRINK_RESULT_CLOSE)
+
+            if image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_4).find_match:
+                ctx.ctrl.click_by_point(RECOVER_TP_USE_CARROT)
+            else:
+                ctx.ctrl.click_by_point(RECOVER_TP_USE_CARROT_ADD)
+                time.sleep(0.5)
+                ctx.cultivate_detail.recover_tp_carrot_count = ctx.cultivate_detail.recover_tp_carrot_count - 1
+                ctx.ctrl.click_by_point(RECOVER_TP_USE_CARROT_CONFIRM)
+            
         if title_text == TITLE[28]:
             ctx.ctrl.click_by_point(SELECT_DIFFICULTY)
+
+        if title_text == TITLE[29]:
+            ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+            
+        if title_text == TITLE[30]:
+            ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+
+        if title_text == TITLE[31]:
+            if ctx.cultivate_detail.parse_battle_info_done:
+                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+
         time.sleep(1)
 
