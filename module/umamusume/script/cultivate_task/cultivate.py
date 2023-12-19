@@ -290,10 +290,10 @@ def script_cultivate_race_list(ctx: UmamusumeContext):
     img = cv2.cvtColor(ctx.current_screen, cv2.COLOR_BGR2GRAY)
     if image_match(img, REF_RACE_LIST_GOAL_RACE).find_match:
         ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_2)
-        time.sleep(0.5)
+        time.sleep(2)
     elif image_match(img, REF_RACE_LIST_URA_RACE).find_match:
         ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_2)
-        time.sleep(0.5)
+        time.sleep(2)
     else:
         if ctx.cultivate_detail.turn_info.turn_operation is None:
             ctx.ctrl.click_by_point(RETURN_TO_CULTIVATE_MAIN_MENU)
@@ -312,9 +312,9 @@ def script_cultivate_race_list(ctx: UmamusumeContext):
             while True:
                 selected = find_race(ctx, img, ctx.cultivate_detail.turn_info.turn_operation.race_id)
                 if selected:
-                    time.sleep(1)
+                    time.sleep(2)
                     ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_2)
-                    time.sleep(1)
+                    time.sleep(2)
                     return
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 if not compare_color_equal(img[1006, 701], [211, 209, 219]):
