@@ -1,6 +1,6 @@
 venv
 .idea
-userdata
+# userdata
 __pycache__
 unknown
 **/__pycache__
