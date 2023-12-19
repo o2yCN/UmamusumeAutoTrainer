@@ -8,6 +8,7 @@ from bot.recog.image_saver import save_img_to_dir_by_pHash
 from bot.recog.image_matcher import image_match, compare_color_equal
 from bot.recog.ocr import ocr_line, find_similar_text
 from module.umamusume.asset.race_data import RACE_LIST
+from module.umamusume.asset.support_card_data import load_support_card_data
 from module.umamusume.context import UmamusumeContext, SupportCardInfo, BattleInfo
 from module.umamusume.asset import *
 from module.umamusume.define import *
@@ -226,6 +227,14 @@ def parse_train_main_menu_operations_availability(ctx: UmamusumeContext, img):
     ctx.cultivate_detail.turn_info.race_available = race_available
     ctx.cultivate_detail.turn_info.medic_room_available = medic_room_available
 
+def parse_current_cupport_card(ctx:UmamusumeContext, img):
+    desc_img = img[125:152,275:670]
+    desc_text = ocr_line(desc_img)
+    name_img = img[152:180,275:420]
+    name_text = ocr_line(name_img)
+
+    return load_support_card_data(name_text,desc_text)
+
 
 def parse_training_support_card(ctx: UmamusumeContext, img, train_type: TrainingType):
     base_x = 590
@@ -261,29 +270,39 @@ def parse_training_support_card(ctx: UmamusumeContext, img, train_type: Training
         support_card_type = SupportCardType.SUPPORT_CARD_TYPE_UNKNOWN
         support_card_icon = cv2.cvtColor(support_card_icon, cv2.COLOR_RGB2GRAY)
 
-        
-        if image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_SPEED).find_match:
-            support_card_type = SupportCardType.SUPPORT_CARD_TYPE_SPEED
-        elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_STAMINA).find_match:
-            support_card_type = SupportCardType.SUPPORT_CARD_TYPE_STAMINA
-        elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_POWER).find_match:
-            support_card_type = SupportCardType.SUPPORT_CARD_TYPE_POWER
-        elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_WILL).find_match:
-            support_card_type = SupportCardType.SUPPORT_CARD_TYPE_WILL
-        elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_INTELLIGENCE).find_match:
-            support_card_type = SupportCardType.SUPPORT_CARD_TYPE_INTELLIGENCE
-        elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_FRIEND).find_match:
-            support_card_type = SupportCardType.SUPPORT_CARD_TYPE_FRIEND
-        if support_card_favor_process is not SupportCardFavorLevel.SUPPORT_CARD_FAVOR_LEVEL_UNKNOWN:
-            
-            support_card_head = support_card_icon[15:80,35:70]
+        support_card_head = support_card_icon[15:80,35:70]
 
-            save_img_to_dir_by_pHash(support_card_head,"resource/umamusume/support_card/small")
+        support_card_data = match_support_card_head(ctx,support_card_head)
 
-            info = SupportCardInfo(card_type=support_card_type,
-                                   favor=support_card_favor_process,
-                                   has_event=support_card_event_available)
+        if support_card_data:
+            info = SupportCardInfo(
+                                name= support_card_data.name,
+                                card_type=support_card_data.card_type,
+                                favor=support_card_favor_process,
+                                has_event=support_card_event_available,
+                                skill_list = support_card_data.skill_list)
             ctx.cultivate_detail.turn_info.training_info_list[train_type.value - 1].support_card_info_list.append(info)
+        else:
+            if image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_SPEED).find_match:
+                support_card_type = SupportCardType.SUPPORT_CARD_TYPE_SPEED
+            elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_STAMINA).find_match:
+                support_card_type = SupportCardType.SUPPORT_CARD_TYPE_STAMINA
+            elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_POWER).find_match:
+                support_card_type = SupportCardType.SUPPORT_CARD_TYPE_POWER
+            elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_WILL).find_match:
+                support_card_type = SupportCardType.SUPPORT_CARD_TYPE_WILL
+            elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_INTELLIGENCE).find_match:
+                support_card_type = SupportCardType.SUPPORT_CARD_TYPE_INTELLIGENCE
+            elif image_match(support_card_icon, REF_SUPPORT_CARD_TYPE_FRIEND).find_match:
+                support_card_type = SupportCardType.SUPPORT_CARD_TYPE_FRIEND
+            if support_card_favor_process is not SupportCardFavorLevel.SUPPORT_CARD_FAVOR_LEVEL_UNKNOWN:
+                
+                save_img_to_dir_by_pHash(support_card_head,"resource/umamusume/support_card/unknown")
+
+                info = SupportCardInfo(card_type=support_card_type,
+                                    favor=support_card_favor_process,
+                                    has_event=support_card_event_available)
+                ctx.cultivate_detail.turn_info.training_info_list[train_type.value - 1].support_card_info_list.append(info)
         base_y += inc
 
 
@@ -476,6 +495,15 @@ def find_skill(ctx: UmamusumeContext, img, skill: list[str], learn_any_skill: bo
         else:
             break
     return find
+
+def match_support_card_head(ctx: UmamusumeContext, img):
+    for i in range(len(ctx.cultivate_detail.support_card_data)):
+        data = ctx.cultivate_detail.support_card_data[i]
+        if data and data.template:
+            if image_match(img, data.template).find_match:
+                return data
+    
+    return None
 
 
 def get_skill_list(img, skill: list[str]) -> list:

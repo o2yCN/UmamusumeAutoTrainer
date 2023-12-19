@@ -1,35 +1,28 @@
 from bot.base.context import BotContext
 from module.umamusume.task import UmamusumeTask, UmamusumeTaskType
+from module.umamusume.asset.support_card_data import SupportCardData
 from module.umamusume.define import *
 import bot.base.log as logger
 
 log = logger.get_logger(__name__)
-
-class SupportCardData:
-    name: str
-    id: int
-    card_type: SupportCardType
-
-    def __init__(self, name: str, id: int, card_type: SupportCardType):
-        self.name = name
-        self.id = id
-        self.card_type = card_type
-
 class SupportCardInfo:
     name: str
     card_type: SupportCardType
     favor: SupportCardFavorLevel
     has_event: bool
+    skill_list : list[str]
 
     def __init__(self,
                  name: str = "support_card",
                  card_type: SupportCardType = SupportCardType.SUPPORT_CARD_TYPE_UNKNOWN,
                  favor: SupportCardFavorLevel = SupportCardFavorLevel.SUPPORT_CARD_FAVOR_LEVEL_UNKNOWN,
-                 has_event: bool = False):
+                 has_event: bool = False,
+                 skill_list: list[str] = []):
         self.name = name
         self.card_type = card_type
         self.favor = favor
         self.has_event = has_event
+        self.skill_list = skill_list
 
 class TrainingInfo:
     support_card_info_list: list[SupportCardInfo]
@@ -179,6 +172,7 @@ class CultivateContextDetail:
     parse_battle_info_done: bool
     support_card_data : list[SupportCardData]
 
+    current_cupport_card_index : int
     recover_tp_carrot_count: int
 
     def __init__(self):
@@ -200,7 +194,22 @@ class CultivateContextDetail:
         self.battle_info = []
         self.parse_battle_info_done = False
         self.support_card_data = []
+        for i in range(6):
+            self.support_card_data.append(None)
         self.recover_tp_carrot_count = 3
+        self.current_cupport_card_index = -1
+
+    def check_support_card_data_init_done(self):
+        for i in range(6):
+            if self.support_card_data[i] == None:
+                return False
+        return True
+    
+    def get_next_support_card_index(self):
+        for i in range(6):
+            if self.support_card_data[i] == None:
+                return i
+        return -1
 
     def reset_skill_learn(self):
         self.learn_skill_done = False

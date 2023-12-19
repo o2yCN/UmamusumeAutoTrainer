@@ -3,6 +3,8 @@ import time
 
 import numpy as np
 
+import random
+
 from bot.base.task import TaskStatus, EndTaskReason
 from module.umamusume.asset.point import *
 from module.umamusume.context import TurnInfo,BattleInfo
@@ -32,14 +34,13 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
     if not ctx.cultivate_detail.turn_info.parse_main_menu_finish:
         parse_cultivate_main_menu(ctx, img)
         
-    # if not ctx.cultivate_detail.parse_battle_info_done:
-    #     ctx.ctrl.click_by_point(CULTIVATE_MENU_OPEN)
-    #     return
+    if not ctx.cultivate_detail.parse_battle_info_done:
+        ctx.ctrl.click_by_point(CULTIVATE_MENU_OPEN)
+        return
     
-    # 解析支援卡信息
-    # if len(ctx.cultivate_detail.support_card_data) != 6:
-    #     ctx.ctrl.click_by_point(CULTIVATE_MENU_OPEN)
-    #     return
+    if not ctx.cultivate_detail.check_support_card_data_init_done():
+        ctx.ctrl.click_by_point(MENU_DECK_INFO)
+        return
     
     has_extra_race = len([i for i in ctx.cultivate_detail.extra_race_list if str(i)[:2]
                           == str(ctx.cultivate_detail.turn_info.date)]) != 0
@@ -88,15 +89,15 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
                 ctx.ctrl.click_by_point(CULTIVATE_RACE)
 
 def script_cultivate_menu(ctx: UmamusumeContext):
-    # if ctx.cultivate_detail.parse_battle_info_done:
-    #     ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
-    # else:
-    #     time.sleep(0.5)
-    #     ctx.ctrl.click_by_point(MENU_BATTLE_HISTORY)
-    if len(ctx.cultivate_detail.support_card_data) <6:
+    if not ctx.cultivate_detail.parse_battle_info_done:
+        ctx.ctrl.click_by_point(MENU_BATTLE_HISTORY)
+        time.sleep(0.5)
+    elif not ctx.cultivate_detail.check_support_card_data_init_done():
         ctx.ctrl.click_by_point(MENU_DECK_INFO)
+        time.sleep(0.5)
     else:
         ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+        time.sleep(0.5)
 
 def script_cultivate_battle_history(ctx: UmamusumeContext):
     if ctx.cultivate_detail.parse_battle_info_done:
@@ -198,8 +199,6 @@ def script_support_card_select(ctx: UmamusumeContext):
         ctx.ctrl.click_by_point(TO_FOLLOW_SUPPORT_CARD_SELECT)
         return
     
-    parse_cultive_support_card_detail(ctx, img)
-
     ctx.ctrl.click_by_point(TO_CULTIVATE_PREPARE_NEXT)
 
 
@@ -248,11 +247,6 @@ def script_cultivate_event(ctx: UmamusumeContext):
             choice_index = 0
         if choice_index - 1 > len(selector_list) or choice_index <= 0:
             return
-        print(choice_index)
-        print(selector_list)
-        print(selector_list[choice_index - 1])
-        print(selector_list[choice_index - 1][0])
-        print(selector_list[choice_index - 1][1])
         ctx.ctrl.click(selector_list[choice_index - 1][0], selector_list[choice_index - 1][1],
                        "事件选项-" + str(choice_index))
     else:
@@ -410,7 +404,8 @@ def script_cultivate_result(ctx: UmamusumeContext):
 
 # 1.878s 2s 0.649s
 def script_cultivate_catch_doll(ctx: UmamusumeContext):
-    ctx.ctrl.click_by_point(CULTIVATE_CATCH_DOLL_START)
+    ctx.ctrl.swipe(CULTIVATE_CATCH_DOLL_START.coordinate.x-10, CULTIVATE_CATCH_DOLL_START.coordinate.y-10,
+                   CULTIVATE_CATCH_DOLL_START.coordinate.x+10, CULTIVATE_CATCH_DOLL_START.coordinate.y+10, random.randint(200,2000), name="")
 
 
 def script_cultivate_catch_doll_result(ctx: UmamusumeContext):

@@ -9,6 +9,7 @@ from bot.recog.image_saver import save_img_to_dir_by_pHash
 from bot.recog.ocr import ocr_line, find_similar_text
 from module.umamusume.asset.point import *
 from module.umamusume.asset.ui import INFO
+from module.umamusume.asset.support_card_data import *
 from module.umamusume.context import UmamusumeContext
 import bot.base.log as logger
 
@@ -47,6 +48,8 @@ TITLE = [
     "公告",
     "菜单",
     "战绩",
+    "编成信息",
+    "协助卡详情",
 ]
 
 
@@ -167,11 +170,43 @@ def script_info(ctx: UmamusumeContext):
             ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
             
         if title_text == TITLE[30]:
-            ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+            if not ctx.cultivate_detail.parse_battle_info_done:
+                ctx.ctrl.click_by_point(MENU_BATTLE_HISTORY)
+            elif not ctx.cultivate_detail.check_support_card_data_init_done():
+                ctx.ctrl.click_by_point(MENU_DECK_INFO)
+            else:
+                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
 
         if title_text == TITLE[31]:
             if ctx.cultivate_detail.parse_battle_info_done:
                 ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                
+        if title_text == TITLE[32]:
+            if ctx.cultivate_detail.check_support_card_data_init_done():
+                ctx.cultivate_detail.current_cupport_card_index = -1
+                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+            else:
+                index = ctx.cultivate_detail.get_next_support_card_index()
+                if index == -1:
+                    ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                else:
+                    ctx.cultivate_detail.current_cupport_card_index = index
+                    ctx.ctrl.click(95+110 * index,720)
 
+        if title_text == TITLE[33]:
+            index = ctx.cultivate_detail.current_cupport_card_index
+            if index < 0 or index > 5:
+                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+            elif ctx.cultivate_detail.support_card_data[index] is None:
+                desc_img = img[125:152,275:670]
+                desc_text = ocr_line(desc_img)
+                name_img = img[152:180,275:420]
+                name_text = ocr_line(name_img)
+                
+                ctx.cultivate_detail.support_card_data[index] = load_support_card_data(name_text,desc_text)
+                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+            else:
+                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                
         time.sleep(1)
 

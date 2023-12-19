@@ -22,7 +22,7 @@ script_dicts: Dict[UmamusumeTaskType, dict] = {
         CULTIVATE_SUPPORT_CARD_SELECT: script_support_card_select,
         CULTIVATE_FOLLOW_SUPPORT_CARD_SELECT: script_follow_support_card_select,
         CULTIVATE_MAIN_MENU: script_cultivate_main_menu,
-        CULTIVATE_MENU: script_cultivate_menu,
+        # CULTIVATE_MENU: script_cultivate_menu,
         CULTIVATE_BATTLE_HISTORY: script_cultivate_battle_history,
         CULTIVATE_TRAINING_SELECT: script_cultivate_training_select,
         CULTIVATE_FINAL_CHECK: script_cultivate_final_check,
