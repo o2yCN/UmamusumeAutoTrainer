@@ -152,6 +152,8 @@ def script_info(ctx: UmamusumeContext):
 
             if image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_4).find_match:
                 ctx.ctrl.click_by_point(RECOVER_TP_USE_CARROT)
+            elif image_match(ctx.ctrl.get_screen(to_gray=True), BTN_CLOSE).find_match:
+                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
             else:
                 ctx.ctrl.click_by_point(RECOVER_TP_USE_CARROT_ADD)
                 time.sleep(0.5)

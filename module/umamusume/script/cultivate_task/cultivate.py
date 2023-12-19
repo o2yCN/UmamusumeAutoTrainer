@@ -239,15 +239,20 @@ def script_cultivate_event(ctx: UmamusumeContext):
         img = ctx.ctrl.get_screen()
         event_name, selector_list, selection_list = parse_cultivate_event(ctx, img, True)
         choice_index = get_event_choice(ctx, event_name)
-        if len(selector_list) == 0 and len(selector_list) == 1:
+        if len(selector_list) == 0 or len(selector_list) == 1:
             return
         # 意外情况容错
         if choice_index - 1 > len(selector_list):
             choice_index = 1
         if choice_index - 1 > len(selector_list):
             choice_index = 0
-        if choice_index - 1 > len(selector_list):
+        if choice_index - 1 > len(selector_list) or choice_index <= 0:
             return
+        print(choice_index)
+        print(selector_list)
+        print(selector_list[choice_index - 1])
+        print(selector_list[choice_index - 1][0])
+        print(selector_list[choice_index - 1][1])
         ctx.ctrl.click(selector_list[choice_index - 1][0], selector_list[choice_index - 1][1],
                        "事件选项-" + str(choice_index))
     else:
@@ -285,8 +290,10 @@ def script_cultivate_race_list(ctx: UmamusumeContext):
     img = cv2.cvtColor(ctx.current_screen, cv2.COLOR_BGR2GRAY)
     if image_match(img, REF_RACE_LIST_GOAL_RACE).find_match:
         ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_2)
+        time.sleep(0.5)
     elif image_match(img, REF_RACE_LIST_URA_RACE).find_match:
         ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_2)
+        time.sleep(0.5)
     else:
         if ctx.cultivate_detail.turn_info.turn_operation is None:
             ctx.ctrl.click_by_point(RETURN_TO_CULTIVATE_MAIN_MENU)
