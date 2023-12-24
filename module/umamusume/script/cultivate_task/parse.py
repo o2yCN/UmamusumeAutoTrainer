@@ -12,7 +12,7 @@ from module.umamusume.asset.support_card_data import load_support_card_data
 from module.umamusume.context import UmamusumeContext, SupportCardInfo, BattleInfo
 from module.umamusume.asset import *
 from module.umamusume.define import *
-from module.umamusume.script.cultivate_task.const import DATE_YEAR, DATE_MONTH
+from module.umamusume.script.cultivate_task.const import DATE_YEAR, DATE_MONTH, SKILL_CAN_MULTI_LEARN_LIST
 import bot.base.log as logger
 
 log = logger.get_logger(__name__)
@@ -225,6 +225,7 @@ def parse_train_main_menu_operations_availability(ctx: UmamusumeContext, img):
     race_available = btn_race_check_point[0] > 200
 
     ctx.cultivate_detail.turn_info.race_available = race_available
+    ctx.cultivate_detail.turn_info.skill_available = skill_available
     ctx.cultivate_detail.turn_info.medic_room_available = medic_room_available
 
 def parse_current_cupport_card(ctx:UmamusumeContext, img):
@@ -459,7 +460,7 @@ def find_race(ctx: UmamusumeContext, img, race_id: int = 0) -> bool:
     return False
 
 
-def find_skill(ctx: UmamusumeContext, img, skill: list[str], learn_any_skill: bool) -> bool:
+def find_skill(ctx: UmamusumeContext, img, skill: dict[str,int], learn_any_skill: bool) -> bool:
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     find = False
     while True:
@@ -472,22 +473,26 @@ def find_skill(ctx: UmamusumeContext, img, skill: list[str], learn_any_skill: bo
                 if not image_match(skill_info_img, REF_SKILL_LEARNED).find_match:
                     skill_name_img = skill_info_img[10: 47, 100: 445]
                     text = ocr_line(skill_name_img)
-                    result = find_similar_text(text, skill, 0.7)
+                    result = find_similar_text(text, skill.keys(), 0.7)
                     # print(text + "->" + result)
                     if result != "" or learn_any_skill:
-                        tmp_img = ctx.ctrl.get_screen()
-                        pt_text = re.sub("\\D", "", ocr_line(tmp_img[400: 440, 490: 665]))
-                        skill_pt_cost_text = re.sub("\\D", "", ocr_line(skill_info_img[69: 99, 525: 588]))
-                        if pt_text != "" and skill_pt_cost_text != "":
-                            pt = int(pt_text)
-                            skill_pt_cost = int(skill_pt_cost_text)
-                            if pt >= skill_pt_cost:
-                                ctx.ctrl.click(match_result.center_point[0] + 128, match_result.center_point[1],
-                                               "加点技能：" + text)
-                                if result in skill:
-                                    skill.remove(result)
-                                ctx.cultivate_detail.learn_skill_selected = True
-                                find = True
+                        times = skill[result]
+                        if times > 1:
+                            log.debug("技能：" + text + "，需要学习" + str(times) + "次")
+                        for i in range(times):
+                            tmp_img = ctx.ctrl.get_screen()
+                            pt_text = re.sub("\\D", "", ocr_line(tmp_img[400: 440, 490: 665]))
+                            skill_pt_cost_text = re.sub("\\D", "", ocr_line(skill_info_img[69: 99, 525: 588]))
+                            if pt_text != "" and skill_pt_cost_text != "":
+                                pt = int(pt_text)
+                                skill_pt_cost = int(skill_pt_cost_text)
+                                if pt >= skill_pt_cost:
+                                    ctx.ctrl.click(match_result.center_point[0] + 128, match_result.center_point[1],
+                                                "加点技能：" + text)
+                                    if result in skill:
+                                        skill.pop(result)
+                                    ctx.cultivate_detail.learn_skill_selected = True
+                                    find = True                                
 
             img[match_result.matched_area[0][1]:match_result.matched_area[1][1],
             match_result.matched_area[0][0]:match_result.matched_area[1][0]] = 0
@@ -542,12 +547,33 @@ def get_skill_list(img, skill: list[str]) -> list:
 
                 available = not image_match(skill_info_img, REF_SKILL_LEARNED).find_match
 
+                is_bad_skill = "×" in text or 'x' in text
+
+                available_click_time = 1
+
+                total_cost = int(cost)
+
+                if is_bad_skill:
+                    available_click_time += 2
+                    total_cost += 200
+
+                if '○' in text or 'o' in text:
+                    available_click_time += 1
+                    total_cost += total_cost*2-10
+                
+                if text in SKILL_CAN_MULTI_LEARN_LIST:
+                    available_click_time += 1
+                    total_cost += total_cost*2-10
+
                 res.append({"skill_name": text,
                             "skill_cost": int(cost),
                             "priority": priority,
                             "gold": is_gold,
                             "subsequent_skill": "",
                             "available": available,
+                            "is_bad_skill":is_bad_skill,
+                            "available_click_time": available_click_time,
+                            "total_cost": total_cost,
                             "y_pos": int(pos_center[1])})
             img[match_result.matched_area[0][1]:match_result.matched_area[1][1],
                 match_result.matched_area[0][0]:match_result.matched_area[1][0]] = 0

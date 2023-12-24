@@ -254,7 +254,7 @@ def script_cultivate_event(ctx: UmamusumeContext):
     
     if event_name and event_name != "":
         # write event data info:
-        with open('resource/umamusume/event/%s.json'%event_name,'w+',encoding='utf-8') as f:
+        with open('resource/umamusume/event/%s.json'%event_name.replace('/',''),'w+',encoding='utf-8') as f:
             f.write(json.dumps({
                 u"name":event_name,
                 u"selection": selection_list,
@@ -473,7 +473,7 @@ def script_cultivate_learn_skill(ctx: UmamusumeContext):
         total_skill_point = 0
     else:
         total_skill_point = int(total_skill_point_text)
-    target_skill_list = []
+    target_skill_list = {}
     curr_point = 0
     for i in range(len(learn_skill_list) + 1):
         if (i > 0 and ctx.cultivate_detail.learn_skill_only_user_provided is True and
@@ -482,9 +482,9 @@ def script_cultivate_learn_skill(ctx: UmamusumeContext):
         for j in range(len(skill_list)):
             if skill_list[j]["priority"] != i or skill_list[j]["available"] is False:
                 continue
-            if curr_point + skill_list[j]["skill_cost"] <= total_skill_point:
-                curr_point += skill_list[j]["skill_cost"]
-                target_skill_list.append(skill_list[j]["skill_name"])
+            if curr_point + skill_list[j]["total_cost"] <= total_skill_point:
+                curr_point += skill_list[j]["total_cost"]
+                target_skill_list[skill_list[j]["skill_name"]] = skill_list[j]["available_click_time"]
                 # 如果点的是金色技能, 就将其绑定的下位技能设置为不可点
                 if skill_list[j]["gold"] is True and skill_list[j]["subsequent_skill"] != '':
                     for k in range(len(skill_list)):

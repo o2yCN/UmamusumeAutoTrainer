@@ -110,6 +110,7 @@ class TurnInfo:
     motivation_level: MotivationLevel
     medic_room_available: bool
     race_available: bool
+    skill_available: bool
 
     turn_operation: TurnOperation | None
     turn_info_logged: bool
@@ -157,6 +158,7 @@ class CultivateContextDetail:
     learn_skill_list: list[str]
     learn_skill_done: bool
     learn_skill_selected: bool
+    must_learn_skill: list[str]
     cultivate_finish: bool
     tactic_list: list[int]
     debut_race_win: bool
