@@ -98,10 +98,12 @@ HISTORICAL_RATING_UPDATE_CONFIRM = ClickPoint(ClickPointType.CLICK_POINT_TYPE_CO
 SCENARIO_RATING_UPDATE_CONFIRM = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(360, 1115), "历代评分更新-下一页", None)
 
 RECEIVE_GIFT = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(515, 1180), "礼物箱-一键领取", None)
-RECEIVE_GIFT_SUCCESS_CLOSE = ClickPoint(ClickPointType.CLICK_POINT_TYPE_TEMPLATE, BTN_CLOSE, None, "礼物箱-领取成功-关闭", None)
 UNLOCK_STORY_TO_HOME_PAGE = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(360, 835), "解锁角色剧情-前往主页", None)
 WIN_TIMES_NOT_ENOUGH_RETURN = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(200, 915), "目标达成次数不足-返回", None)
 ACTIVITY_STORY_UNLOCK_CONFIRM = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(360, 830), "活动剧情解锁-关闭", None)
+
+CLOSE = ClickPoint(ClickPointType.CLICK_POINT_TYPE_TEMPLATE, BTN_CLOSE, None, "关闭", None)
+CONTINUE = ClickPoint(ClickPointType.CLICK_POINT_TYPE_TEMPLATE, BTN_CONTINUE, None, "继续", None)
 
 TO_RECOVER_TP = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(520, 830), "回复训练值", None)
 USE_TP_DRINK = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(610, 320), "使用tp饮料", None)

@@ -549,21 +549,28 @@ def get_skill_list(img, skill: list[str]) -> list:
 
                 is_bad_skill = "×" in text or 'x' in text
 
+                formated_name = text
+
                 available_click_time = 1
 
                 total_cost = int(cost)
 
                 if is_bad_skill:
+                    formated_name = formated_name.replace("×", "")
+                    formated_name = formated_name.replace("x", "")
                     available_click_time += 2
                     total_cost += 200
 
                 if '○' in text or 'o' in text:
-                    available_click_time += 1
-                    total_cost += total_cost*2-10
+                    formated_name = formated_name.replace("○", "")
+                    formated_name = formated_name.replace("o", "")
+                    if formated_name in SKILL_CAN_MULTI_LEARN_LIST:
+                        available_click_time += 1
+                        total_cost += total_cost - 10
                 
                 if text in SKILL_CAN_MULTI_LEARN_LIST:
                     available_click_time += 1
-                    total_cost += total_cost*2-10
+                    total_cost += total_cost - 10
 
                 res.append({"skill_name": text,
                             "skill_cost": int(cost),

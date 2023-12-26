@@ -96,12 +96,12 @@ def script_cultivate_menu(ctx: UmamusumeContext):
         ctx.ctrl.click_by_point(MENU_DECK_INFO)
         time.sleep(0.5)
     else:
-        ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+        ctx.ctrl.click_by_point(CLOSE)
         time.sleep(0.5)
 
 def script_cultivate_battle_history(ctx: UmamusumeContext):
     if ctx.cultivate_detail.parse_battle_info_done:
-        ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+        ctx.ctrl.click_by_point(CLOSE)
     else:
         battle_history = []
         while True:

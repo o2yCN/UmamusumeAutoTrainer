@@ -50,6 +50,8 @@ TITLE = [
     "战绩",
     "编成信息",
     "协助卡详情",
+    "日期变化",
+    "继续养成",
 ]
 
 
@@ -131,7 +133,7 @@ def script_info(ctx: UmamusumeContext):
         if title_text == TITLE[21]:
             ctx.ctrl.click_by_point(RECEIVE_GIFT)
         if title_text == TITLE[22]:
-            ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+            ctx.ctrl.click_by_point(CLOSE)
         if title_text == TITLE[23]:
             ctx.ctrl.click_by_point(UNLOCK_STORY_TO_HOME_PAGE)
         if title_text == TITLE[24]:
@@ -156,7 +158,7 @@ def script_info(ctx: UmamusumeContext):
             if image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_4).find_match:
                 ctx.ctrl.click_by_point(RECOVER_TP_USE_CARROT)
             elif image_match(ctx.ctrl.get_screen(to_gray=True), BTN_CLOSE).find_match:
-                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                ctx.ctrl.click_by_point(CLOSE)
             else:
                 ctx.ctrl.click_by_point(RECOVER_TP_USE_CARROT_ADD)
                 time.sleep(0.5)
@@ -167,7 +169,7 @@ def script_info(ctx: UmamusumeContext):
             ctx.ctrl.click_by_point(SELECT_DIFFICULTY)
 
         if title_text == TITLE[29]:
-            ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+            ctx.ctrl.click_by_point(CLOSE)
             
         if title_text == TITLE[30]:
             if not ctx.cultivate_detail.parse_battle_info_done:
@@ -175,20 +177,20 @@ def script_info(ctx: UmamusumeContext):
             elif not ctx.cultivate_detail.check_support_card_data_init_done():
                 ctx.ctrl.click_by_point(MENU_DECK_INFO)
             else:
-                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                ctx.ctrl.click_by_point(CLOSE)
 
         if title_text == TITLE[31]:
             if ctx.cultivate_detail.parse_battle_info_done:
-                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                ctx.ctrl.click_by_point(CLOSE)
                 
         if title_text == TITLE[32]:
             if ctx.cultivate_detail.check_support_card_data_init_done():
                 ctx.cultivate_detail.current_cupport_card_index = -1
-                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                ctx.ctrl.click_by_point(CLOSE)
             else:
                 index = ctx.cultivate_detail.get_next_support_card_index()
                 if index == -1:
-                    ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                    ctx.ctrl.click_by_point(CLOSE)
                 else:
                     ctx.cultivate_detail.current_cupport_card_index = index
                     ctx.ctrl.click(95+110 * index,720)
@@ -196,7 +198,7 @@ def script_info(ctx: UmamusumeContext):
         if title_text == TITLE[33]:
             index = ctx.cultivate_detail.current_cupport_card_index
             if index < 0 or index > 5:
-                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                ctx.ctrl.click_by_point(CLOSE)
             elif ctx.cultivate_detail.support_card_data[index] is None:
                 desc_img = img[125:152,275:670]
                 desc_text = ocr_line(desc_img)
@@ -204,9 +206,15 @@ def script_info(ctx: UmamusumeContext):
                 name_text = ocr_line(name_img)
                 
                 ctx.cultivate_detail.support_card_data[index] = load_support_card_data(name_text,desc_text)
-                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                ctx.ctrl.click_by_point(CLOSE)
             else:
-                ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
+                ctx.ctrl.click_by_point(CLOSE)
+        
+        if title_text == TITLE[34]:
+            ctx.ctrl.click(719, 1, "")
+            
+        if title_text == TITLE[35]:
+            ctx.ctrl.click_by_point(CONTINUE)
                 
         time.sleep(1)
 
