@@ -240,6 +240,7 @@ def build_context(task: UmamusumeTask, ctrl) -> UmamusumeContext:
         detail.follow_support_card_level = task.detail.follow_support_card_level
         detail.extra_race_list = task.detail.extra_race_list
         detail.learn_skill_list = task.detail.learn_skill_list
+        detail.must_learn_skill = task.detail.learn_skill_list[0] or {}
         detail.learn_skill_blacklist = task.detail.learn_skill_blacklist
         detail.tactic_list = task.detail.tactic_list
         detail.clock_use_limit = task.detail.clock_use_limit

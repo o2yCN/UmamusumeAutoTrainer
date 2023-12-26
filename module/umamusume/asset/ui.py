@@ -2,7 +2,7 @@ from bot.base.resource import UI
 import module.umamusume.asset.template as template
 
 MAIN_MENU = UI("MAIN_MENU", [template.UI_MAIN_MENU], [])
-MAIN_MENU_2 = UI("MAIN_MENU_2", [template.UI_MAIN_MENU_1,template.UI_MAIN_MENU_2], [])
+MAIN_MENU_2 = UI("MAIN_MENU_2", [template.UI_MAIN_MENU_1], [])
 CULTIVATE_SCENARIO_SELECT = UI("CULTIVATE_SCENARIO_SELECT", [template.UI_CULTIVATE_SCENARIO_SELECT], [])
 CULTIVATE_FOLLOW_SUPPORT_CARD_SELECT = UI("CULTIVATE_FOLLOW_SUPPORT_CARD_SELECT",
                                           [template.UI_CULTIVATE_FOLLOW_SUPPORT_CARD_SELECT], [])
