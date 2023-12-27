@@ -274,6 +274,26 @@ def script_cultivate_goal_race(ctx: UmamusumeContext):
             ctx.cultivate_detail.turn_info_history.append(ctx.cultivate_detail.turn_info)
         ctx.cultivate_detail.turn_info = TurnInfo()
         ctx.cultivate_detail.turn_info.date = current_date
+
+    
+    # 意外情况处理
+    if not ctx.cultivate_detail.turn_info.turn_learn_skill_done and ctx.cultivate_detail.learn_skill_done:
+        ctx.cultivate_detail.reset_skill_learn()
+
+    # 先只在比赛前学技能
+    if (ctx.cultivate_detail.turn_info.uma_attribute.skill_point > ctx.cultivate_detail.learn_skill_threshold
+            and not ctx.cultivate_detail.turn_info.turn_learn_skill_done):
+        if len(ctx.cultivate_detail.learn_skill_list) > 0 or not ctx.cultivate_detail.learn_skill_only_user_provided:
+            ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_SKILL_LEARN)
+        else:
+            ctx.cultivate_detail.learn_skill_done = True
+            ctx.cultivate_detail.turn_info.turn_learn_skill_done = True
+        ctx.cultivate_detail.turn_info.parse_main_menu_finish = False
+        return
+    else:
+        ctx.cultivate_detail.reset_skill_learn()
+
+    
     ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_1)
 
 
@@ -481,7 +501,7 @@ def script_cultivate_learn_skill(ctx: UmamusumeContext):
     target_skill_list_raw = {}
     curr_point = 0
     for i in range(len(learn_skill_list) + 1):
-        if (i > 0 and ctx.cultivate_detail.learn_skill_only_user_provided is True and
+        if (i >= len(learn_skill_list) and ctx.cultivate_detail.learn_skill_only_user_provided is True and
                 not ctx.cultivate_detail.cultivate_finish):
             break
         for j in range(len(skill_list)):

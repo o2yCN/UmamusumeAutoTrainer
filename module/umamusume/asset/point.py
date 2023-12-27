@@ -26,6 +26,7 @@ RETURN_TO_CULTIVATE_MAIN_MENU = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORD
 CULTIVATE_GOAL_RACE_INTER_1 = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(508, 1081), "进入生涯赛详细界面", None)
 CULTIVATE_GOAL_RACE_INTER_2 = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(360,1082), "开始生涯赛", None)
 CULTIVATE_GOAL_RACE_INTER_3 = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(520,920), "开始生涯赛-确认", None)
+CULTIVATE_GOAL_RACE_SKILL_LEARN = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(200, 1080), "技能", None)
 
 BEFORE_RACE_CHANGE_TACTIC = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(575, 745), "比赛前-更改战术", None)
 BEFORE_RACE_CHANGE_TACTIC_4 = ClickPoint(ClickPointType.CLICK_POINT_TYPE_COORDINATE, None, Coordinate(585, 780), "更改战术-领跑", None)
