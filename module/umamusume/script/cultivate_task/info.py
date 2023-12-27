@@ -52,6 +52,7 @@ TITLE = [
     "协助卡详情",
     "日期变化",
     "继续养成",
+    "关注训练员"
 ]
 
 
@@ -215,6 +216,9 @@ def script_info(ctx: UmamusumeContext):
             
         if title_text == TITLE[35]:
             ctx.ctrl.click_by_point(CONTINUE)
+        
+        if title_text == TITLE[36]:
+            ctx.ctrl.click(719, 1, "")
                 
         time.sleep(1)
 
