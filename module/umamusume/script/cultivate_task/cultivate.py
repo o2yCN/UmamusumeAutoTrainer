@@ -49,18 +49,6 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
     if not ctx.cultivate_detail.turn_info.turn_learn_skill_done and ctx.cultivate_detail.learn_skill_done:
         ctx.cultivate_detail.reset_skill_learn()
 
-    if (ctx.cultivate_detail.turn_info.uma_attribute.skill_point > ctx.cultivate_detail.learn_skill_threshold
-            and not ctx.cultivate_detail.turn_info.turn_learn_skill_done):
-        if len(ctx.cultivate_detail.learn_skill_list) > 0 or not ctx.cultivate_detail.learn_skill_only_user_provided:
-            ctx.ctrl.click_by_point(CULTIVATE_SKILL_LEARN)
-        else:
-            ctx.cultivate_detail.learn_skill_done = True
-            ctx.cultivate_detail.turn_info.turn_learn_skill_done = True
-        ctx.cultivate_detail.turn_info.parse_main_menu_finish = False
-        return
-    else:
-        ctx.cultivate_detail.reset_skill_learn()
-
     if not ctx.cultivate_detail.turn_info.parse_train_info_finish:
         if has_extra_race or ctx.cultivate_detail.turn_info.remain_stamina < 48:
             ctx.cultivate_detail.turn_info.parse_train_info_finish = True
@@ -83,6 +71,20 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
         elif turn_operation.turn_operation_type == TurnOperationType.TURN_OPERATION_TYPE_TRIP:
             ctx.ctrl.click_by_point(CULTIVATE_TRIP)
         elif turn_operation.turn_operation_type == TurnOperationType.TURN_OPERATION_TYPE_RACE:
+            
+            # 先只在比赛前学技能
+            if (ctx.cultivate_detail.turn_info.uma_attribute.skill_point > ctx.cultivate_detail.learn_skill_threshold
+                    and not ctx.cultivate_detail.turn_info.turn_learn_skill_done):
+                if len(ctx.cultivate_detail.learn_skill_list) > 0 or not ctx.cultivate_detail.learn_skill_only_user_provided:
+                    ctx.ctrl.click_by_point(CULTIVATE_SKILL_LEARN)
+                else:
+                    ctx.cultivate_detail.learn_skill_done = True
+                    ctx.cultivate_detail.turn_info.turn_learn_skill_done = True
+                ctx.cultivate_detail.turn_info.parse_main_menu_finish = False
+                return
+            else:
+                ctx.cultivate_detail.reset_skill_learn()
+                
             if 36 < ctx.cultivate_detail.turn_info.date <= 40 or 60 < ctx.cultivate_detail.turn_info.date <= 64:
                 ctx.ctrl.click_by_point(CULTIVATE_RACE_SUMMER)
             else:
