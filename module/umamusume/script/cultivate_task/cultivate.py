@@ -151,10 +151,10 @@ def script_main_menu(ctx: UmamusumeContext):
     if ctx.cultivate_detail.no_tp or (time.time() - ctx.task.detail.
        timestamp['no_tp'].get(ctx.task.device_name or "default", 0) < 300):
         ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.TP_NOT_ENOUGH)
-    if ts := ctx.task.detail.timestamp['borrowed'].get(ctx.task.device_name or "default", 0):
-        import croniter
-        if time.time() < croniter.croniter("0 5 * * *", ts).get_next():
-            ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.BORROWED)
+    # if ts := ctx.task.detail.timestamp['borrowed'].get(ctx.task.device_name or "default", 0):
+    #     import croniter
+    #     if time.time() < croniter.croniter("0 5 * * *", ts).get_next():
+    #         ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.BORROWED)
     ctx.ctrl.click_by_point(TO_CULTIVATE_SCENARIO_CHOOSE)
 
 
@@ -264,6 +264,7 @@ def script_cultivate_race_list(ctx: UmamusumeContext):
     if image_match(img, REF_RACE_LIST_GOAL_RACE).find_match:
         ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_2)
     elif image_match(img, REF_RACE_LIST_URA_RACE).find_match:
+        ctx.cultivate_detail.update_clock_limit_by_uma_attribute_and_skill()
         ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_2)
     else:
         if ctx.cultivate_detail.turn_info.turn_operation is None:

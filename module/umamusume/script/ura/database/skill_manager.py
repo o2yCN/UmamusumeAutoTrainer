@@ -59,15 +59,15 @@ class SkillData(_Nameable):
 
 class SkillManager(list):
     @property
-    def id_map(self):
+    def _id_map(self):
         return {x.id: x for x in self}
 
     @property
-    def rate_map(self):
+    def _rate_map(self):
         return {(x.group_id, x.rarity, x.rate): x for x in self}
 
     @property
-    def rarity_map(self):
+    def _rarity_map(self):
         return {(x.group_id, x.rarity):
                 [y for y in self if y.group_id == x.group_id and y.rarity == x.rarity]
                 for x in self}
@@ -91,7 +91,15 @@ class SkillManager(list):
 
     def deconstruction(self, skill_id: int) -> (int, int, int):
         return self[skill_id].deconstruction
+    
+    def setup_cache(self):
+        self.rarity_map = self._rarity_map
+        self.rate_map = self._rate_map
+        self.id_map = self._id_map
 
+    def __init__(self, skills: list):
+        super().__init__(skills)
+        self.setup_cache()
 
 class SkillManagerGenerator:
     default: SkillManager

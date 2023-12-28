@@ -309,6 +309,9 @@ class CultivateContextDetail:
     def reset_skill_learn(self):
         self.learn_skill_done = False
         self.learn_skill_selected = False
+    
+    def update_clock_limit_by_uma_attribute_and_skill(self):
+        self.clock_use_limit = 3
 
 
 class TimeSaleContextDetail:

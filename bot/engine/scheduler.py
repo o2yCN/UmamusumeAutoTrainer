@@ -54,6 +54,7 @@ class Scheduler:
                         if task.task_status == TaskStatus.TASK_STATUS_PENDING and not task_executor.active:
                             executor_thread = threading.Thread(target=task_executor.start, args=([task]))
                             executor_thread.start()
+                            break
                     elif task.task_execute_mode == TaskExecuteMode.TASK_EXECUTE_MODE_CRON_JOB:
                         if task.task_status == TaskStatus.TASK_STATUS_SCHEDULED:
                             if task.cron_job_config is not None:

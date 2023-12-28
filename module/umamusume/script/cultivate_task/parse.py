@@ -453,6 +453,8 @@ def get_skill_list(img, skill: list[list[str]], skill_blacklist: list[str]) -> l
                 skill_cost_img = skill_info_img[69: 99, 525: 588]
                 text = ocr_line(skill_name_img)
                 cost = re.sub("\\D", "", ocr_line(skill_cost_img))
+                if cost == '':
+                    cost = "0"
 
                 # 检查是不是金色技能
                 mask = cv2.inRange(skill_info_cp, numpy.array([40, 180, 240]), numpy.array([100, 210, 255]))

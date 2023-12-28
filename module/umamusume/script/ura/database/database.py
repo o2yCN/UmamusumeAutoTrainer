@@ -271,7 +271,7 @@ class DataBase:
 
     @staticmethod
     def _load(path: str) -> str:
-        import brotli
+        import brotlicffi as brotli
         try:
             with open(path, 'rb') as file:
                 return brotli.decompress(file.read()).decode()

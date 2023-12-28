@@ -8,7 +8,8 @@ else:
 
 
 def json2br():
-    import brotli, os
+    import brotlicffi as brotli
+    import os
     for x in os.listdir():
         if '.json' in x:
             with open(x, 'rb') as f, open(x[:-4] + 'br', 'wb') as g:
@@ -26,7 +27,8 @@ def msgpack2json():
 
 
 def br2json():
-    import os, brotli
+    import brotlicffi as brotli
+    import os
     for x in os.listdir():
         if '.br' in x:
             if (j := x[:-2] + 'json') in os.listdir():
