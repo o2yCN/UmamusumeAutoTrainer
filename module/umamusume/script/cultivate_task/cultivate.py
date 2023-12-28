@@ -21,6 +21,10 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
     if current_date == -1:
         log.warning("解析日期失败")
         return
+
+    # URA比赛强制学一波技能
+    if current_date >=97:
+        ctx.cultivate_detail.set_skill_learn_threshold_scaler(0)
     # 如果进入新的一回合，记录旧的回合信息并创建新的
     if ctx.cultivate_detail.turn_info is None or current_date != ctx.cultivate_detail.turn_info.date:
         if ctx.cultivate_detail.turn_info is not None:
@@ -73,7 +77,7 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
         elif turn_operation.turn_operation_type == TurnOperationType.TURN_OPERATION_TYPE_RACE:
             
             # 先只在比赛前学技能
-            if (ctx.cultivate_detail.turn_info.uma_attribute.skill_point > ctx.cultivate_detail.learn_skill_threshold
+            if (ctx.cultivate_detail.check_skill_threshod(ctx.cultivate_detail.turn_info.uma_attribute.skill_point)
                     and not ctx.cultivate_detail.turn_info.turn_learn_skill_done):
                 if len(ctx.cultivate_detail.learn_skill_list) > 0 or not ctx.cultivate_detail.learn_skill_only_user_provided:
                     ctx.ctrl.click_by_point(CULTIVATE_SKILL_LEARN)
@@ -135,11 +139,13 @@ def script_cultivate_training_select(ctx: UmamusumeContext):
     if ctx.cultivate_detail.turn_info.turn_operation is not None:
         if (ctx.cultivate_detail.turn_info.turn_operation.turn_operation_type ==
                 TurnOperationType.TURN_OPERATION_TYPE_TRAINING):
+            training_type_index = ctx.cultivate_detail.turn_info.turn_operation.training_type.value - 1
             ctx.ctrl.click_by_point(
-                TRAINING_POINT_LIST[ctx.cultivate_detail.turn_info.turn_operation.training_type.value - 1])
+                TRAINING_POINT_LIST[training_type_index])
             time.sleep(0.5)
             ctx.ctrl.click_by_point(
-                TRAINING_POINT_LIST[ctx.cultivate_detail.turn_info.turn_operation.training_type.value - 1])
+                TRAINING_POINT_LIST[training_type_index])
+            ctx.cultivate_detail.check_must_learn_skill(ctx.cultivate_detail.turn_info.training_info_list[training_type_index])
             time.sleep(3)
             return
         else:
@@ -281,7 +287,7 @@ def script_cultivate_goal_race(ctx: UmamusumeContext):
         ctx.cultivate_detail.reset_skill_learn()
 
     # 先只在比赛前学技能
-    if (ctx.cultivate_detail.turn_info.uma_attribute.skill_point > ctx.cultivate_detail.learn_skill_threshold
+    if (ctx.cultivate_detail.check_skill_threshod(ctx.cultivate_detail.turn_info.uma_attribute.skill_point)
             and not ctx.cultivate_detail.turn_info.turn_learn_skill_done):
         if len(ctx.cultivate_detail.learn_skill_list) > 0 or not ctx.cultivate_detail.learn_skill_only_user_provided:
             ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_SKILL_LEARN)
@@ -308,6 +314,7 @@ def script_cultivate_race_list(ctx: UmamusumeContext):
         ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_2)
         time.sleep(2)
     elif image_match(img, REF_RACE_LIST_URA_RACE).find_match:
+        ctx.cultivate_detail.update_clock_limit_by_uma_attribute_and_skill()
         ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_2)
         time.sleep(2)
     else:
@@ -396,6 +403,12 @@ def script_cultivate_race_result(ctx: UmamusumeContext):
     battleinfo.rank = rank
 
     ctx.cultivate_detail.battle_info.append(battleinfo)
+
+    # 失败后,降低技能学习阈值
+    if rank == 1:
+        pass
+    else:
+        ctx.cultivate_detail.set_skill_learn_threshold_scaler(0.5)
 
     ctx.ctrl.click_by_point(RACE_RESULT_CONFIRM)
 
@@ -552,6 +565,15 @@ def script_cultivate_learn_skill(ctx: UmamusumeContext):
 
     ctx.cultivate_detail.learn_skill_done = True
     ctx.cultivate_detail.turn_info.turn_learn_skill_done = True
+
+    #没学过任何技能,把阈值提高,避免频繁判断
+    if len(target_skill_list) == 0:
+        if ctx.cultivate_detail.learn_skill_threshold_scaler > 0:
+            ctx.cultivate_detail.set_skill_learn_threshold_scaler(ctx.cultivate_detail.learn_skill_threshold_scaler * 1.2)
+        else:
+            ctx.cultivate_detail.set_skill_learn_threshold_scaler(1.0)
+    else:
+        ctx.cultivate_detail.set_skill_learn_threshold_scaler(2.0)
 
 
 def script_not_found_ui(ctx: UmamusumeContext):

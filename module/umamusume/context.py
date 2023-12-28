@@ -166,6 +166,7 @@ class CultivateContextDetail:
     clock_use_limit: int
     clock_used: int
     learn_skill_threshold: int
+    learn_skill_threshold_scaler: float
     learn_skill_only_user_provided: bool
     learn_skill_before_race: bool
     allow_recover_tp: bool
@@ -207,6 +208,7 @@ class CultivateContextDetail:
         self.current_cupport_card_index = -1
         self.uma_attribute = UmaAttribute()
         self.learned_skill_list = set()
+        self.learn_skill_threshold_scaler = 1.0
 
     def check_support_card_data_init_done(self):
         for i in range(6):
@@ -224,11 +226,44 @@ class CultivateContextDetail:
         self.learn_skill_done = False
         self.learn_skill_selected = False
 
+    def set_skill_learn_threshold_scaler(self, scaler: float):
+        self.learn_skill_threshold_scaler = scaler
+
     def update_uma_attribute(self,turn_uma_attr: UmaAttribute):
         self.uma_attribute = turn_uma_attr
     
     def add_skill_learned(self, skill_name: str):
         self.learned_skill_list.add(skill_name)
+
+    def check_skill_threshod(self, skill_point : int) -> bool:
+        if skill_point >= self.learn_skill_threshold * self.learn_skill_threshold_scaler:
+            return True
+        else:
+            return False
+        
+    def check_must_learn_skill(self, training_info: TrainingInfo):
+        need_check_set = set()
+        for skill in self.must_learn_skill:
+            need_check_set.add(skill)
+        for skill in self.learned_skill_list:
+            if skill in need_check_set:
+                need_check_set.remove(skill)
+
+        if len(need_check_set) == 0:
+            return
+
+        for card in training_info.support_card_info_list:
+            if card.has_event:
+                for skill in card.skill_list:
+                    if skill in need_check_set:
+                        log.info("事件发现必学技能:%s, 调整学习阈值用于学技能", skill)
+                        self.set_skill_learn_threshold_scaler(0)
+
+    def update_clock_limit_by_uma_attribute_and_skill(self):
+        log.info("当前属性值 速度：%s, 耐力：%s, 力量：%s, 毅力：%s, 智力：%s, 技能点：%s", self.uma_attribute.speed,
+                 self.uma_attribute.stamina, self.uma_attribute.power, self.uma_attribute.will, self.uma_attribute.intelligence, self.uma_attribute.skill_point)        
+        log.info("已学技能列表：%s", self.learned_skill_list)
+        self.clock_use_limit = 1
 
 class UmamusumeContext(BotContext):
     task: UmamusumeTask
