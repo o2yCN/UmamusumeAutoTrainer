@@ -160,6 +160,7 @@ def parse_umamusume_basic_ability_value(ctx: UmamusumeContext, img):
                                                                                       TrainingType.TRAINING_TYPE_INTELLIGENCE)
     ctx.cultivate_detail.turn_info.uma_attribute.skill_point = trans_attribute_value(skill_point_text, ctx)
 
+    ctx.cultivate_detail.update_uma_attribute(ctx.cultivate_detail.turn_info.uma_attribute)
 
 def trans_attribute_value(text: str, ctx: UmamusumeContext,
                           train_type: TrainingType = TrainingType.TRAINING_TYPE_UNKNOWN) -> int:

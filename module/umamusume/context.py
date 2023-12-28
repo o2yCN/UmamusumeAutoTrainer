@@ -178,6 +178,9 @@ class CultivateContextDetail:
     current_cupport_card_index : int
     recover_tp_carrot_count: int
 
+    uma_attribute: UmaAttribute
+    learned_skill_list : set[str]
+
     def __init__(self):
         self.expect_attribute = None
         self.turn_info = TurnInfo()
@@ -202,6 +205,8 @@ class CultivateContextDetail:
             self.support_card_data.append(None)
         self.recover_tp_carrot_count = 3
         self.current_cupport_card_index = -1
+        self.uma_attribute = UmaAttribute()
+        self.learned_skill_list = set()
 
     def check_support_card_data_init_done(self):
         for i in range(6):
@@ -219,6 +224,11 @@ class CultivateContextDetail:
         self.learn_skill_done = False
         self.learn_skill_selected = False
 
+    def update_uma_attribute(self,turn_uma_attr: UmaAttribute):
+        self.uma_attribute = turn_uma_attr
+    
+    def add_skill_learned(self, skill_name: str):
+        self.learned_skill_list.add(skill_name)
 
 class UmamusumeContext(BotContext):
     task: UmamusumeTask

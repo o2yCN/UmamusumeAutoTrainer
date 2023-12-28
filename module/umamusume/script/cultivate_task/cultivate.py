@@ -485,6 +485,8 @@ def script_cultivate_learn_skill(ctx: UmamusumeContext):
 
     # 将金色技能和其后面的技能绑定
     for i in range(len(skill_list)):
+        if skill_list[i]["available"] is False:
+            ctx.cultivate_detail.add_skill_learned(skill_list[i]["skill_name"])
         if i != (len(skill_list) - 1) and skill_list[i]["gold"] is True:
             skill_list[i]["subsequent_skill"] = skill_list[i + 1]["skill_name"]
 
