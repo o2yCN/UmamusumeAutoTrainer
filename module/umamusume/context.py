@@ -188,6 +188,7 @@ class TurnInfo:
     uma_condition_list: list[Condition]
     skill_hint_list: list[SkillHint]
     learnt_skill_list: list[LearntSkill]
+    disable_skill_id_array: list[int]
     uma_attribute_limit_list: list[int]
     max_vital: int
     train_level_count_list: list[int]
@@ -212,6 +213,7 @@ class TurnInfo:
         self.uma_condition_list = []
         self.skill_hint_list = []
         self.learnt_skill_list = []
+        self.disable_skill_id_array = []
         self.uma_attribute_limit_list = [0, 0, 0, 0, 0]
         self.max_vital = 100
         self.train_level_count_list = [0, 0, 0, 0, 0]
