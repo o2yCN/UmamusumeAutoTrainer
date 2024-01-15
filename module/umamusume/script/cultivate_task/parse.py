@@ -434,7 +434,7 @@ def find_skill(ctx: UmamusumeContext, img, skill: list[str], learn_any_skill: bo
     return find
 
 
-def get_skill_list(img, skill: list[str], skill_blacklist: list[str]) -> list:
+def get_skill_list(img, skill: list[list[str]], skill_blacklist: list[str]) -> list:
     origin_img = img
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     res = []
@@ -553,8 +553,3 @@ def parse_factor(ctx: UmamusumeContext):
             break
     ctx.cultivate_detail.parse_factor_done = True
     ctx.task.detail.cultivate_result['factor_list'] = factor_list
-
-
-def parse_umamusume_detail(ctx: UmamusumeContext):
-    ctx.cultivate_detail.turn_info.parse_condition_finish = True
-    print("成功进入parse")

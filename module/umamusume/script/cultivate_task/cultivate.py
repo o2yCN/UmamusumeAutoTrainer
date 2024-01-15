@@ -9,7 +9,19 @@ from module.umamusume.context import TurnInfo
 from module.umamusume.script.cultivate_task.const import SKILL_LEARN_PRIORITY_LIST
 from module.umamusume.script.cultivate_task.event import Event
 from module.umamusume.script.cultivate_task.parse import *
+try:
+    from module.umamusume.script.ura.cultivate import ura_parse_cultivate_main_menu, ura_get_event_choice_by_effect
+    from module.umamusume.script.ura.skill_ai import ura_script_cultivate_learn_skill
+except ImportError:
+    def ura_get_event_choice_by_effect(ctx: UmamusumeContext):
+        return
+    ura_parse_cultivate_main_menu = parse_cultivate_main_menu
 
+    def ura_script_cultivate_learn_skill(ctx: UmamusumeContext,
+                                         learn_skill_list: list[list[str]],
+                                         learn_skill_blacklist: list[str]):
+        raise ImportError
+    print("未找到URA相关组件")
 log = logger.get_logger(__name__)
 
 
@@ -27,26 +39,15 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
         ctx.cultivate_detail.turn_info.date = current_date
         log.debug("进入新回合，日期：" + str(current_date))
         ctx.cultivate_detail.reset_skill_learn()
-        
-    # 如果有旧的回合信息，继承状态和启示
-    if history := ctx.cultivate_detail.turn_info_history:
-        if history[-1] != -1:
-            ctx.cultivate_detail.turn_info.uma_condition = history[-1].uma_condition.copy()
-            ctx.cultivate_detail.turn_info.skill_hint = history[-1].skill_hint.copy()
 
     # 解析主界面
+    if not ctx.cultivate_detail.turn_info.parse_main_menu_finish:
+        ura_parse_cultivate_main_menu(ctx, img)
     if not ctx.cultivate_detail.turn_info.parse_main_menu_finish:
         parse_cultivate_main_menu(ctx, img)
 
     has_extra_race = len([i for i in ctx.cultivate_detail.extra_race_list if str(i)[:2]
                           == str(ctx.cultivate_detail.turn_info.date)]) != 0
-
-    # 如果医务室开放，检查状态
-    # if ctx.cultivate_detail.turn_info.medic_room_available:
-    if 0:
-        if not ctx.cultivate_detail.turn_info.parse_condition_finish:
-            ctx.ctrl.click_by_point(TO_ABILITY_DETAIL)
-            return
 
     # 意外情况处理
     if not ctx.cultivate_detail.turn_info.turn_learn_skill_done and ctx.cultivate_detail.learn_skill_done:
@@ -203,9 +204,9 @@ def script_cultivate_event(ctx: UmamusumeContext):
         # 避免出现选项残缺的情况，这里重新解析一次
         img = ctx.ctrl.get_screen()
         event_name, selector_list = parse_cultivate_event(ctx, img)
-        choice_index = Event(event_name)(ctx)
+        choice_index = ura_get_event_choice_by_effect(ctx) or Event(event_name)(ctx)
         # 意外情况容错
-        if choice_index - 1 > len(selector_list):
+        if choice_index > len(selector_list):
             choice_index = 1
         ctx.ctrl.click(selector_list[choice_index - 1][0], selector_list[choice_index - 1][1],
                        "事件选项-" + str(choice_index))
@@ -337,7 +338,24 @@ def script_cultivate_result(ctx: UmamusumeContext):
 
 # 1.878s 2s 0.649s
 def script_cultivate_catch_doll(ctx: UmamusumeContext):
-    ctx.ctrl.click_by_point(CULTIVATE_CATCH_DOLL_START)
+    """img = ctx.ctrl.get_screen()
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img = img[240:480, 620:660]
+    title = ocr_line(img)
+    title1 = find_similar_text(title, ("滑动屏幕移动镜头",), 0.8)
+    if not title1:
+        log.warning("抓娃娃未开始 %s", title)
+        return"""
+    match ctx.cultivate_detail.catch_doll:
+        case 0:
+            ctx.ctrl.swipe(x1=365, y1=1117, x2=370, y2=1110, duration=1878, name="抓娃娃第一次")
+        case 1:
+            ctx.ctrl.swipe(x1=365, y1=1117, x2=370, y2=1110, duration=2000, name="抓娃娃第二次")
+        case 2:
+            ctx.ctrl.swipe(x1=365, y1=1117, x2=370, y2=1110, duration=649, name="抓娃娃第三次")
+        case _:
+            ctx.ctrl.click_by_point(CULTIVATE_CATCH_DOLL_START)
+    ctx.cultivate_detail.catch_doll += 1
 
 
 def script_cultivate_catch_doll_result(ctx: UmamusumeContext):
@@ -354,7 +372,9 @@ def script_cultivate_finish(ctx: UmamusumeContext):
 
 def script_cultivate_learn_skill(ctx: UmamusumeContext):
     if ctx.cultivate_detail.learn_skill_done:
-        if ctx.cultivate_detail.learn_skill_selected:
+        "如果确定按钮点不动（G通道=130），就点返回"
+        img = cv2.cvtColor(ctx.current_screen, cv2.COLOR_BGR2RGB)[1080, 360][1]
+        if ctx.cultivate_detail.learn_skill_selected and img > 160:
             ctx.ctrl.click_by_point(CULTIVATE_LEARN_SKILL_CONFIRM)
         else:
             ctx.ctrl.click_by_point(RETURN_TO_CULTIVATE_FINISH)
@@ -375,6 +395,13 @@ def script_cultivate_learn_skill(ctx: UmamusumeContext):
             return
         else:
             learn_skill_list = ctx.cultivate_detail.learn_skill_list
+
+    try:
+        ura_script_cultivate_learn_skill(ctx, learn_skill_list, learn_skill_blacklist)
+    except (ImportError, Exception) as e:
+        print("出问题了", e)
+    else:
+        return
 
     # 遍历整页, 找出所有可点的技能
     skill_list = []
@@ -488,8 +515,3 @@ def script_historical_rating_update(ctx: UmamusumeContext):
 
 def script_scenario_rating_update(ctx: UmamusumeContext):
     ctx.ctrl.click_by_point(SCENARIO_RATING_UPDATE_CONFIRM)
-
-
-def script_umamusume_detail(ctx: UmamusumeContext):
-    print("成功进入script")
-    parse_umamusume_detail(ctx)
