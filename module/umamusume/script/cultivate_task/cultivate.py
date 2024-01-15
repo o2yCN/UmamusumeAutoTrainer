@@ -9,7 +9,19 @@ from module.umamusume.context import TurnInfo
 from module.umamusume.script.cultivate_task.const import SKILL_LEARN_PRIORITY_LIST
 from module.umamusume.script.cultivate_task.event import Event
 from module.umamusume.script.cultivate_task.parse import *
+try:
+    from module.umamusume.script.ura.cultivate import ura_parse_cultivate_main_menu, ura_get_event_choice_by_effect
+    from module.umamusume.script.ura.skill_ai import ura_script_cultivate_learn_skill
+except ImportError:
+    def ura_get_event_choice_by_effect(ctx: UmamusumeContext):
+        return
+    ura_parse_cultivate_main_menu = parse_cultivate_main_menu
 
+    def ura_script_cultivate_learn_skill(ctx: UmamusumeContext,
+                                         learn_skill_list: list[list[str]],
+                                         learn_skill_blacklist: list[str]):
+        raise ImportError
+    print("未找到URA相关组件")
 log = logger.get_logger(__name__)
 
 
@@ -29,6 +41,8 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
         ctx.cultivate_detail.reset_skill_learn()
 
     # 解析主界面
+    if not ctx.cultivate_detail.turn_info.parse_main_menu_finish:
+        ura_parse_cultivate_main_menu(ctx, img)
     if not ctx.cultivate_detail.turn_info.parse_main_menu_finish:
         parse_cultivate_main_menu(ctx, img)
 
@@ -190,7 +204,7 @@ def script_cultivate_event(ctx: UmamusumeContext):
         # 避免出现选项残缺的情况，这里重新解析一次
         img = ctx.ctrl.get_screen()
         event_name, selector_list = parse_cultivate_event(ctx, img)
-        choice_index = Event(event_name)(ctx)
+        choice_index = ura_get_event_choice_by_effect(ctx) or Event(event_name)(ctx)
         # 意外情况容错
         if choice_index > len(selector_list):
             choice_index = 1
@@ -348,7 +362,9 @@ def script_cultivate_finish(ctx: UmamusumeContext):
 
 def script_cultivate_learn_skill(ctx: UmamusumeContext):
     if ctx.cultivate_detail.learn_skill_done:
-        if ctx.cultivate_detail.learn_skill_selected:
+        "如果确定按钮点不动（G通道=130），就点返回"
+        img = cv2.cvtColor(ctx.current_screen, cv2.COLOR_BGR2RGB)[1080, 360][1]
+        if ctx.cultivate_detail.learn_skill_selected and img > 160:
             ctx.ctrl.click_by_point(CULTIVATE_LEARN_SKILL_CONFIRM)
         else:
             ctx.ctrl.click_by_point(RETURN_TO_CULTIVATE_FINISH)
@@ -369,6 +385,13 @@ def script_cultivate_learn_skill(ctx: UmamusumeContext):
             return
         else:
             learn_skill_list = ctx.cultivate_detail.learn_skill_list
+
+    try:
+        ura_script_cultivate_learn_skill(ctx, learn_skill_list, learn_skill_blacklist)
+    except (ImportError, Exception) as e:
+        print("出问题了", e)
+    else:
+        return
 
     # 遍历整页, 找出所有可点的技能
     skill_list = []
