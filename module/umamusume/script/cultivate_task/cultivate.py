@@ -568,10 +568,7 @@ def script_cultivate_learn_skill(ctx: UmamusumeContext):
 
     #没学过任何技能,把阈值提高,避免频繁判断
     if len(target_skill_list) == 0:
-        if ctx.cultivate_detail.learn_skill_threshold_scaler > 0:
-            ctx.cultivate_detail.set_skill_learn_threshold_scaler(ctx.cultivate_detail.learn_skill_threshold_scaler * 1.2)
-        else:
-            ctx.cultivate_detail.set_skill_learn_threshold_scaler(1.0)
+        ctx.cultivate_detail.set_skill_learn_threshold_scaler(max(ctx.cultivate_detail.learn_skill_threshold_scaler * 1.2, 2.0))
     else:
         ctx.cultivate_detail.set_skill_learn_threshold_scaler(2.0)
 
