@@ -260,13 +260,13 @@ def script_cultivate_event(ctx: UmamusumeContext):
     else:
         log.debug("未出现选项")
     
-    if event_name and event_name != "":
-        # write event data info:
-        with open('resource/umamusume/event/%s.json'%event_name.replace('/',''),'w+',encoding='utf-8') as f:
-            f.write(json.dumps({
-                u"name":event_name,
-                u"selection": selection_list,
-            },ensure_ascii=False))
+    # if event_name and event_name != "":
+    #     # write event data info:
+    #     with open('resource/umamusume/event/%s.json'%event_name.replace('/',''),'w+',encoding='utf-8') as f:
+    #         f.write(json.dumps({
+    #             u"name":event_name,
+    #             u"selection": selection_list,
+    #         },ensure_ascii=False))
 
 def script_cultivate_goal_race(ctx: UmamusumeContext):    
     img = ctx.current_screen
