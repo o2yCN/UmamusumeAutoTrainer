@@ -48,6 +48,7 @@ TITLE = [
     "关注训练员",
     "日期变化",
     "连接已断开",
+    "数据下载",
 ]
 
 
@@ -168,4 +169,6 @@ def script_info(ctx: UmamusumeContext):
             ctx.ctrl.click_by_point(DATE_CHANGE_CONFIRM)
         if title_text == TITLE[33]:
             ctx.ctrl.click_by_point(CONNECTION_LOST_RESUME)
+        if title_text == TITLE[34]:
+            ctx.ctrl.click(520, 830, "数据下载确认")
         time.sleep(1)
