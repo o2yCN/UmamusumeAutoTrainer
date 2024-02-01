@@ -1,3 +1,4 @@
+from types import FunctionType
 from bot.base.context import BotContext
 from module.umamusume.task import UmamusumeTask, UmamusumeTaskType
 from module.umamusume.define import *
@@ -189,9 +190,74 @@ class CultivateContextDetail:
         self.learn_skill_selected = False
 
 
+class TimeSaleContextDetail:
+    buy: list[int]
+    bought: list[int]
+    buying: int | None
+    refresh: FunctionType
+
+    def __init__(self):
+        self.buy = []
+        self.bought = []
+        self.buying = None
+
+
+class TimeSaleTaskContextDetail:
+    time_sale: list[int]
+    time_sale_detail: TimeSaleContextDetail
+
+    def __init__(self):
+        self.time_sale = []
+        self.time_sale_detail = TimeSaleContextDetail()
+
+    def refresh_time_sale(self):
+        self.time_sale_detail.buy[:] = self.time_sale
+        self.time_sale_detail.bought.clear()
+        self.time_sale_detail.buying = None
+
+
+class TeamStadiumContextDetail(TimeSaleTaskContextDetail):
+    opponent_index: int | None
+    opponent_stamina: int | None
+    raced: bool
+    off: bool
+
+    def __init__(self):
+        super().__init__()
+        self.raced = False
+        self.off = False
+
+
+class DonateContextDetail:
+    ask_shoe_type: int
+    donated: bool
+    asked: bool
+    swiped: int
+
+    def __init__(self):
+        super().__init__()
+        self.donated = False
+        self.asked = False
+        self.swiped = 0
+
+
+class DailyRaceContextDetail(TimeSaleTaskContextDetail):
+    race: int | None
+    difficulty: int | None
+    raced: bool
+
+    def __init__(self):
+        super().__init__()
+        self.raced = False
+
+
 class UmamusumeContext(BotContext):
     task: UmamusumeTask
     cultivate_detail: CultivateContextDetail
+    team_stadium_detail: TeamStadiumContextDetail
+    donate_detail: DonateContextDetail
+    daily_race_detail: DailyRaceContextDetail
+    time_sale_detail: TimeSaleContextDetail
 
     def __init__(self, task, ctrl):
         super().__init__(task, ctrl)
@@ -202,25 +268,43 @@ class UmamusumeContext(BotContext):
 
 def build_context(task: UmamusumeTask, ctrl) -> UmamusumeContext:
     ctx = UmamusumeContext(task, ctrl)
-    if task.task_type == UmamusumeTaskType.UMAMUSUME_TASK_TYPE_CULTIVATE:
-        detail = CultivateContextDetail()
-        detail.expect_attribute = task.detail.expect_attribute
-        detail.follow_support_card_name = task.detail.follow_support_card_name
-        detail.follow_support_card_level = task.detail.follow_support_card_level
-        detail.extra_race_list = task.detail.extra_race_list
-        detail.learn_skill_list = task.detail.learn_skill_list
-        detail.learn_skill_blacklist = task.detail.learn_skill_blacklist
-        detail.tactic_list = task.detail.tactic_list
-        detail.clock_use_limit = task.detail.clock_use_limit
-        detail.learn_skill_threshold = task.detail.learn_skill_threshold
-        detail.learn_skill_only_user_provided = task.detail.learn_skill_only_user_provided
-        detail.allow_recover_tp_drink = task.detail.allow_recover_tp_drink
-        detail.allow_recover_tp_diamond = task.detail.allow_recover_tp_diamond
-        detail.extra_weight = task.detail.extra_weight
-        ctx.cultivate_detail = detail
+    match task.task_type:
+        case UmamusumeTaskType.UMAMUSUME_TASK_TYPE_CULTIVATE:
+            detail = CultivateContextDetail()
+            detail.expect_attribute = task.detail.expect_attribute
+            detail.follow_support_card_name = task.detail.follow_support_card_name
+            detail.follow_support_card_level = task.detail.follow_support_card_level
+            detail.extra_race_list = task.detail.extra_race_list
+            detail.learn_skill_list = task.detail.learn_skill_list
+            detail.learn_skill_blacklist = task.detail.learn_skill_blacklist
+            detail.tactic_list = task.detail.tactic_list
+            detail.clock_use_limit = task.detail.clock_use_limit
+            detail.learn_skill_threshold = task.detail.learn_skill_threshold
+            detail.learn_skill_only_user_provided = task.detail.learn_skill_only_user_provided
+            detail.allow_recover_tp_drink = task.detail.allow_recover_tp_drink
+            detail.allow_recover_tp_diamond = task.detail.allow_recover_tp_diamond
+            detail.extra_weight = task.detail.extra_weight
+            ctx.cultivate_detail = detail
+        case UmamusumeTaskType.UMAMUSUME_TASK_TYPE_TEAM_STADIUM:
+            detail = TeamStadiumContextDetail()
+            detail.opponent_index = task.detail.opponent_index
+            detail.opponent_stamina = task.detail.opponent_stamina
+            detail.time_sale[:] = task.detail.time_sale
+            detail.refresh_time_sale()
+            ctx.team_stadium_detail = detail
+            ctx.time_sale_detail = detail.time_sale_detail
+            ctx.time_sale_detail.refresh = detail.refresh_time_sale
+        case UmamusumeTaskType.UMAMUSUME_TASK_TYPE_DONATE:
+            detail = DonateContextDetail()
+            detail.ask_shoe_type = task.detail.ask_shoe_type
+            ctx.donate_detail = detail
+        case UmamusumeTaskType.UMAMUSUME_TASK_TYPE_DAILY_RACE:
+            detail = DailyRaceContextDetail()
+            detail.race = task.detail.daily_race_type
+            detail.difficulty = task.detail.daily_race_difficulty
+            detail.time_sale[:] = task.detail.time_sale
+            detail.refresh_time_sale()
+            ctx.daily_race_detail = detail
+            ctx.time_sale_detail = detail.time_sale_detail
+            ctx.time_sale_detail.refresh = detail.refresh_time_sale
     return ctx
-
-
-
-
-
