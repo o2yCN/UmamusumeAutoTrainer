@@ -23,6 +23,21 @@
       <div>
         耐力阈值: <span>{{task.detail.opponent_stamina}}</span>
       </div>
+    </div>
+    <div v-if="task.task_type === 3">
+      <div>
+        <span>请求: {{shoe_type_name[task.detail?.ask_shoe_type]}}</span>
+      </div>
+    </div>
+    <div v-if="task.task_type === 4">
+      <div>
+        <span>目标赛事: {{daily_race_type[task.detail?.daily_race_type]}}</span>
+      </div>
+      <div>
+        <span>难度: {{daily_race_difficulty[task.detail?.daily_race_difficulty]}}</span>
+      </div>
+    </div>
+    <div v-if="task.task_type === 2 || task.task_type === 4">
       <div>
         <span>限时特卖: <span v-for="item in task.detail.time_sale" style="background-color: #49BFF7;" class="badge badge-pill badge-secondary">{{time_sale_item[item]}}</span></span>
       </div>
@@ -32,11 +47,6 @@
           <span v-for="item in bought" style="background-color: #E0E0E0; color: #794016;" class="badge badge-pill badge-secondary">{{time_sale_item[item]}}</span>
           <br/>
         </span>
-      </div>
-    </div>
-    <div v-if="task.task_type === 3">
-      <div>
-        <span>请求: {{shoe_type_name[task.detail?.ask_shoe_type]}}</span>
       </div>
     </div>
   </div>
@@ -49,17 +59,18 @@ export default {
   data: function(){
     return{
       shoe_type_name: {
-        1: "短",
-        2: "英",
-        3: "中",
-        4: "长",
-        0: "无所谓"
+        1: "短距离跑鞋",
+        2: "英里跑鞋",
+        3: "中距离跑鞋",
+        4: "长距离跑鞋",
+        5: "泥地跑鞋",
+        0: "任意"
       },
       opponent_type: {
         1: "上",
         2: "中",
         3: "下",
-        0: "无所谓"
+        0: "随意"
       },
       time_sale_item: {
         0: "碎片一",
@@ -72,6 +83,15 @@ export default {
         7: "中距离跑鞋",
         8: "长距离跑鞋",
         9: "泥地跑鞋"
+      },
+      daily_race_type:{
+        0: "月光奖（金币）",
+        1: "木星杯（协助积分）",
+      },
+      daily_race_difficulty:{
+        0: "EASY",
+        1: "NORMAL",
+        2: "HARD",
       }
     }
   }

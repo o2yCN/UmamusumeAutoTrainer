@@ -360,23 +360,7 @@
                   </div>
                 </div>
               </div>
-              <div class="form-group">
-                <div>⭐ 限时特卖购买 </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <div class="form-check" v-for="item in timeSaleItemList1">
-                    <input class="form-check-input" v-model="timeSale" type="checkbox" :id="item.id" :value="item.id">
-                    <span>{{item.name}}</span>
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="form-check" v-for="item in timeSaleItemList2">
-                    <input class="form-check-input" v-model="timeSale" type="checkbox" :id="item.id" :value="item.id">
-                    <span>{{item.name}}</span>
-                  </div>
-                </div>
-              </div>
+              
             </div>
             <!--捐鞋-->
             <div v-if="selectedUmamusumeTaskType?.id === 3">
@@ -385,12 +369,50 @@
                   <div class="form-group">
                     <label for="selectShoe">⭐ 要鞋</label>
                     <select v-model="askShoeType" class="form-control" id="selectShoe">
-                      <option :value=1>短</option>
-                      <option :value=2>英</option>
-                      <option :value=3>中</option>
-                      <option :value=4>长</option>
-                      <option :value=0>无所谓</option>
+                      <option v-for="item in timeSaleItemList2" :value="item.id-4">{{item.name}}</option>
+                      <option :value=0>任意</option>
                     </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--日常赛事-->
+            <div v-if="selectedUmamusumeTaskType?.id === 4">
+              <div class="row">
+                <div class="col">
+                  <div class="form-group">
+                    <label for="selectDailyRace">⭐ 目标赛事</label>
+                    <select v-model="selectedDailyRace" class="form-control" id="selectDailyRace">
+                      <option v-for="race in daily_race_type" :value="race.id">{{race.name}}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-group">
+                    <label for="selectDailyRaceDifficulty">⭐ 目标难度</label>
+                    <select v-model="selectedDailyRaceDifficulty" class="form-control" id="selectDailyRaceDifficulty">
+                      <option v-for="diff in daily_race_difficulty" :value="diff.id">{{diff.name}}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--限时特卖-->
+            <div v-if="selectedUmamusumeTaskType?.id === 2 || selectedUmamusumeTaskType?.id === 4">
+              <div class="form-group">
+                <div>⭐ 限时特卖购买 </div>
+                <div class="row">
+                  <div class="col">
+                    <div class="form-check" v-for="item in timeSaleItemList1">
+                      <input class="form-check-input" v-model="timeSale" type="checkbox" :id="item.id" :value="item.id">
+                      <span>{{item.name}}</span>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="form-check" v-for="item in timeSaleItemList2">
+                      <input class="form-check-input" v-model="timeSale" type="checkbox" :id="item.id" :value="item.id">
+                      <span>{{item.name}}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -449,18 +471,10 @@ export default {
       hideG3: false,
       levelDataList:[],
       umamusumeTaskTypeList:[
-        {
-          id: 1,
-          name: "育成",
-        },
-        {
-          id: 2,
-          name: "竞技场",
-        },
-        {
-          id: 3,
-          name: "捐鞋",
-        }
+        {id: 1, name: "育成"},
+        {id: 2, name: "竞技场"},
+        {id: 3, name: "捐鞋"},
+        {id: 4, name: "日常赛事"},
       ],
       umamusumeList:[
         {id:1, name:'特别周'},
@@ -817,6 +831,15 @@ export default {
           {id:8, name:"长距离跑鞋"},
           {id:9, name:"泥地跑鞋"},
         ],
+        daily_race_type:[
+          {id:0, name:"月光奖（金币）"},
+          {id:1, name:"木星杯（协助积分）"},
+        ],
+        daily_race_difficulty:[
+          {id:0, name:"EASY"},
+          {id:1, name:"NORMAL"},
+          {id:2, name:"HARD"},
+        ],
       // ===  已选择  ===
       selectedExecuteMode: 1,
       expectTimes: 0,
@@ -851,6 +874,8 @@ export default {
       opponentStamina: 600,
       timeSale: [0, 1, 2],
       askShoeType: 1,
+      selectedDailyRace: 0,
+      selectedDailyRaceDifficulty: 2,
       device_name:"",
     }
   },
@@ -939,6 +964,13 @@ export default {
       else if (this.selectedUmamusumeTaskType.id === 3) {
         payload.attachment_data = {
           "ask_shoe_type": this.askShoeType
+        }
+      }
+      else if (this.selectedUmamusumeTaskType.id === 4) {
+        payload.attachment_data = {
+          "daily_race_type": this.selectedDailyRace,
+          "daily_race_difficulty": this.selectedDailyRaceDifficulty,
+          "time_sale": this.timeSale
         }
       }
       if(this.selectedExecuteMode === 2){

@@ -15,10 +15,10 @@ def before_hook(ctx: UmamusumeContext):
 
 
 def after_hook(ctx: UmamusumeContext):
+    img = cv2.cvtColor(ctx.current_screen, cv2.COLOR_BGR2GRAY)
+    if image_match(img, BTN_SKIP).find_match:
+        ctx.ctrl.click_by_point(SKIP)
     if ctx.task.task_type == UmamusumeTaskType.UMAMUSUME_TASK_TYPE_CULTIVATE:
-        img = cv2.cvtColor(ctx.current_screen, cv2.COLOR_BGR2GRAY)
-        if image_match(img, BTN_SKIP).find_match:
-            ctx.ctrl.click_by_point(SKIP)
         if image_match(img, BTN_SKIP_OFF).find_match:
             ctx.ctrl.click_by_point(SCENARIO_SKIP_OFF)
         if image_match(img, BTN_SKIP_SPEED_1).find_match:
@@ -32,7 +32,6 @@ def after_hook(ctx: UmamusumeContext):
                     ctx.cultivate_detail.turn_info.turn_operation = get_operation(ctx)
                     ctx.cultivate_detail.turn_info.turn_operation.log_turn_operation()
     elif ctx.task.task_type == UmamusumeTaskType.UMAMUSUME_TASK_TYPE_TEAM_STADIUM:
-        img = cv2.cvtColor(ctx.current_screen, cv2.COLOR_BGR2GRAY)
         if image_match(img, BTN_SKIP).find_match:
             ctx.ctrl.click_by_point(SKIP)
 
