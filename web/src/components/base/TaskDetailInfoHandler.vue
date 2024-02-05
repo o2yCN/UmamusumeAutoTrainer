@@ -15,6 +15,9 @@
       <div v-if="task.end_task_reason !== undefined && task.end_task_reason != ''">
         <span>状态: {{task.task_status}} ({{task.end_task_reason}})</span>
       </div>
+      <div>
+        <span v-if="task.device_name !== ''" class="small">设备：{{ task.device_name }}</span>
+      </div>
     </div>
   </div>
 </template>

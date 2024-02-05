@@ -48,6 +48,7 @@ TITLE = [
     "关注训练员",
     "日期变化",
     "连接已断开",
+    "数据下载",
 ]
 
 
@@ -135,6 +136,7 @@ def script_info(ctx: UmamusumeContext):
             ctx.ctrl.click_by_point(WIN_TIMES_NOT_ENOUGH_RETURN)
         if title_text == TITLE[25]:
             ctx.ctrl.click_by_point(ACTIVITY_STORY_UNLOCK_CONFIRM)
+            ctx.ctrl.click_by_point(ACTIVITY_STORY_UNLOCK_CONFIRM2)
         if title_text == TITLE[26]:
             if ctx.cultivate_detail.allow_recover_tp_drink or \
                     ctx.cultivate_detail.allow_recover_tp_diamond:
@@ -149,7 +151,7 @@ def script_info(ctx: UmamusumeContext):
                     ctx.ctrl.click_by_point(USE_DIAMOND)
             elif image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_2).find_match or \
                     image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_4).find_match:
-                ctx.ctrl.click_by_point(USE_DIAMOND_CONFIRM_MAX)
+                ctx.ctrl.click_by_point(USE_DIAMOND_PLUS_MARK)
                 time.sleep(0.1)
                 ctx.ctrl.click_by_point(USE_TP_DRINK_CONFIRM)
             elif image_match(ctx.ctrl.get_screen(to_gray=True), REF_RECOVER_TP_3).find_match or \
@@ -167,4 +169,6 @@ def script_info(ctx: UmamusumeContext):
             ctx.ctrl.click_by_point(DATE_CHANGE_CONFIRM)
         if title_text == TITLE[33]:
             ctx.ctrl.click_by_point(CONNECTION_LOST_RESUME)
+        if title_text == TITLE[34]:
+            ctx.ctrl.click(520, 830, "数据下载确认")
         time.sleep(1)

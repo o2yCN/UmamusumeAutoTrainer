@@ -22,17 +22,35 @@ class TaskDetail:
 
     opponent_index: int
     opponent_stamina: int
+    time_sale: list[int]
+    time_sale_bought: list[list[int]]
 
     ask_shoe_type: int
+
+    daily_race_type: int
+    daily_race_difficulty: int
+
+    timestamp = {
+        'no_rp': {},
+        'donated': {},
+        'asked': {},
+        'no_more_request': {},
+        'daily_raced': {},
+    }
 
 
 class EndTaskReason(Enum):
     TP_NOT_ENOUGH = "训练值不足"
     RP_NOT_ENOUGH = "竞赛值不足"
+    DONATED = "今日捐献次数已满"
+    OFF = "统计中"
+    NO_REQUESTS = "没人要鞋"
+    DAILY_RACED = "日常赛事次数用尽"
 
 
 class UmamusumeTask(Task):
     detail: TaskDetail
+    device_name: str | None
 
     def end_task(self, status, reason) -> None:
         super().end_task(status, reason)
@@ -46,6 +64,7 @@ class UmamusumeTaskType(Enum):
     UMAMUSUME_TASK_TYPE_CULTIVATE = 1
     UMAMUSUME_TASK_TYPE_TEAM_STADIUM = 2
     UMAMUSUME_TASK_TYPE_DONATE = 3
+    UMAMUSUME_TASK_TYPE_DAILY_RACE = 4
 
 
 def build_task(task_execute_mode: TaskExecuteMode, task_type: int,
@@ -56,6 +75,7 @@ def build_task(task_execute_mode: TaskExecuteMode, task_type: int,
     ut.cron_job_config = CronJobConfig()
     if cron_job_config:
         ut.cron_job_config.cron = cron_job_config['cron']
+    ut.device_name = attachment_data.get('device_name')
     if task_type == 1:
         td.expect_attribute = attachment_data['expect_attribute']
         td.follow_support_card_level = int(attachment_data['follow_support_card_level'])
@@ -77,8 +97,11 @@ def build_task(task_execute_mode: TaskExecuteMode, task_type: int,
         td.opponent_stamina = attachment_data['opponent_stamina']
     elif task_type == 3:
         td.ask_shoe_type = attachment_data['ask_shoe_type']
+    elif task_type == 4:
+        td.daily_race_type = attachment_data['daily_race_type']
+        td.daily_race_difficulty = attachment_data['daily_race_difficulty']
+    if task_type in (2, 4):
+        td.time_sale = sorted(attachment_data['time_sale'])
+        td.time_sale_bought = []
     ut.detail = td
     return ut
-
-
-

@@ -338,14 +338,6 @@ def script_cultivate_result(ctx: UmamusumeContext):
 
 # 1.878s 2s 0.649s
 def script_cultivate_catch_doll(ctx: UmamusumeContext):
-    """img = ctx.ctrl.get_screen()
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img = img[240:480, 620:660]
-    title = ocr_line(img)
-    title1 = find_similar_text(title, ("滑动屏幕移动镜头",), 0.8)
-    if not title1:
-        log.warning("抓娃娃未开始 %s", title)
-        return"""
     match ctx.cultivate_detail.catch_doll:
         case 0:
             ctx.ctrl.swipe(x1=365, y1=1117, x2=370, y2=1110, duration=1878, name="抓娃娃第一次")
