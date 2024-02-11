@@ -152,10 +152,16 @@ class SkillManagerGenerator:
                 rare_superior = [s for s in group
                                  if s.rarity == skill.rarity + 1
                                  and s.rate == skill.rate + 1]
+                # 负面技能的上位(单圈)
+                superior_of_negative = [s for s in group
+                                        if s.rarity == skill.rarity
+                                        and s.rate == skill.rate + 2 == 1]
                 if normal_superior:
                     skill.superior = normal_superior[0]
                 elif rare_superior:
                     skill.superior = rare_superior[0]
+                elif superior_of_negative:
+                    skill.superior = superior_of_negative[0]
                 else:
                     skill.superior = None
 
@@ -167,10 +173,16 @@ class SkillManagerGenerator:
                 lower_inferior = [i for i in group
                                   if i.rarity == skill.rarity - 1
                                   and i.rate == skill.rarity - 1]
+                # 同稀有度的下下位技能(×)
+                negative_inferior = [i for i in group
+                                     if i.rarity == skill.rarity
+                                     and i.rate == skill.rate - 2 == -1]
                 if normal_inferior:
                     skill.inferior = normal_inferior[0]
                 elif lower_inferior:
                     skill.inferior = lower_inferior[0]
+                elif negative_inferior:
+                    skill.inferior = negative_inferior[0]
                 else:
                     skill.inferior = None
         for skill in sorted(skills, key=lambda x: x.rate, reverse=True):
@@ -179,6 +191,20 @@ class SkillManagerGenerator:
                 # 学了
                 # if [learnt for learnt in chara_info.learnt_skill_list if learnt.skill_id == inferior.id]:
                 if any(filter(lambda learnt: learnt.skill_id == inferior.id, chara_info.learnt_skill_list)):
+                    if inferior.rate == -1:
+                        # 带有负面技能（未消除），则其上位一定未学
+                        # 仅在第一次遇到时操作
+                        if inferior.grade > 0:
+                            print(inferior.name, skill.name, 'break')
+                            break
+                        print(inferior.name, skill.name, 'action')
+                        inferior.grade = -inferior.grade
+                        superior = inferior.superior
+                        while superior is not None:
+                            superior.grade += inferior.grade
+                            superior.cost += inferior.cost
+                            superior = superior.superior
+                        break
                     skill.grade -= inferior.grade
                     break
                 else:
@@ -237,7 +263,22 @@ class SkillManagerGenerator:
                                             skills.get_all_by_group_id(group[0])))
             already_have = set(tip.id for tip in tips)
             tips.extend(skill for skill in additional_skills if skill.id not in already_have)
-
+        # 当存在负面技能时添加自身及其上位
+        for learnt in ctx.cultivate_detail.turn_info.learnt_skill_list:
+            negative = skills[learnt.skill_id]
+            if not negative.rate < 0:
+                continue
+            additional_skills = skills[negative.group_id, negative.rarity]
+            already_have = set(tip.id for tip in tips)
+            tips.extend(skill for skill in additional_skills if skill.id not in already_have)
+        # 当存在已消除的负面技能时添加其上位
+        for disabled in ctx.cultivate_detail.turn_info.disable_skill_id_array:
+            negative = skills[disabled]
+            if not negative.rate < 0:
+                continue
+            additional_skills = skills[negative.group_id, negative.rarity]
+            already_have = set(tip.id for tip in tips)
+            tips.extend(skill for skill in additional_skills if skill.id not in already_have and skill.id != disabled)
         if remove_inferiors:
             # 保证技能列表中的列表都是最上位技能（有下位技能则去除）
             # 理想中tips里应只保留最上位技能，其所有的下位技能都去除
@@ -272,6 +313,9 @@ class SkillManagerGenerator:
             if skill is None:
                 has_unknown_skills = True
                 print(f"[red]警告：未知已购买技能，id={learnt.skill_id}[/]")
+                continue
+            # 只学习了负面技能自身就不要动
+            if skill.rate == -1:
                 continue
             skill.cost = 9999999
             while hasattr(skill, 'inferior') and (inferior := skill.inferior):
@@ -308,9 +352,9 @@ class SkillManagerGenerator:
         for i in range(len(tips)):
             s = tips[i]
             # 读取此技能可以点的所有情况
-            superior_id = [0, 0, 0]
-            superior_cost = [99999, 99999, 99999]
-            superior_grade = [-99999, -99999, -99999]
+            superior_id = [0, 0, 0, 0]
+            superior_cost = [99999, 99999, 99999, 99999]
+            superior_grade = [-99999, -99999, -99999, -99999]
 
             superior_id[0] = s.id
             superior_cost[0] = s.cost
@@ -326,6 +370,11 @@ class SkillManagerGenerator:
                     superior_id[2] = s.id
                     superior_cost[2] = s.cost
                     superior_grade[2] = s.grade
+                    if superior_id[2] != 0 and hasattr(s, 'inferior') and s.inferior is not None:
+                        s = s.inferior
+                        superior_id[3] = s.id
+                        superior_cost[3] = s.cost
+                        superior_grade[3] = s.grade
 
             if superior_grade[0] == 0:
                 superior_cost[0] = 99999
@@ -333,24 +382,27 @@ class SkillManagerGenerator:
                 superior_cost[1] = 99999
             if superior_grade[2] == 0:
                 superior_cost[2] = 99999
+            if superior_grade[3] == 0:
+                superior_cost[3] = 99999
 
             # 退化技能到最低级，方便选择
             for j in range(total_sp, -1, -1):
-                # 背包四种选法
+                # 背包五种选法
                 # 0 - 不选
                 # 1 - 只选此技能
                 # 2 - 选这个技能和它的上一级技能
                 # 3 - 选这个技能的最高位技（全点）
-                choice = [0, 0, 0, 0]
+                choice = [0, 0, 0, 0, 0]
                 choice[0] = _dp[j]
                 choice[1] = _dp[j - superior_cost[0]] + superior_grade[0] if j - superior_cost[0] > 0 else -1
                 choice[2] = _dp[j - superior_cost[1]] + superior_grade[1] if j - superior_cost[1] > 0 else -1
                 choice[3] = _dp[j - superior_cost[2]] + superior_grade[2] if j - superior_cost[2] > 0 else -1
+                choice[4] = _dp[j - superior_cost[3]] + superior_grade[3] if j - superior_cost[3] > 0 else -1
 
                 # 判断是否为四种选法中的最优选择
                 def is_best_option(index: int):
                     is_best = True
-                    for k in range(4):
+                    for k in range(5):
                         is_best = choice[index] >= choice[k] and is_best
                     return is_best
 
@@ -365,6 +417,9 @@ class SkillManagerGenerator:
                 elif is_best_option(3):
                     _dp[j] = choice[3]
                     dp_log[j][:] = dp_log[j - superior_cost[2]] + superior_id[2:3]
+                elif is_best_option(4):
+                    _dp[j] = choice[4]
+                    dp_log[j][:] = dp_log[j - superior_cost[3]] + superior_id[3:4]
             # for j
         # for i
         # 读取最终选择的技能
@@ -372,7 +427,8 @@ class SkillManagerGenerator:
         for _id in learn_skill_id:
             for skill in tips:
                 inferior = skill.inferior
-                most_inferior = inferior.inferior if inferior is not None else None
+                more_inferior = inferior.inferior if inferior is not None else None
+                most_inferior = more_inferior.inferior if more_inferior is not None else None
                 if skill.id == _id:
                     learn.append(skill)
                     total_sp -= skill.cost
@@ -380,6 +436,10 @@ class SkillManagerGenerator:
                 elif inferior is not None and inferior.id == _id:
                     learn.append(inferior)
                     total_sp -= inferior.cost
+                    continue
+                elif more_inferior is not None and more_inferior.id == _id:
+                    learn.append(more_inferior)
+                    total_sp -= more_inferior.cost
                     continue
                 elif most_inferior is not None and most_inferior.id == _id:
                     learn.append(most_inferior)
