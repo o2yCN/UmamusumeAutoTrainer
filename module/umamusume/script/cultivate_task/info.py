@@ -132,6 +132,7 @@ def script_info(ctx: UmamusumeContext):
             ctx.ctrl.click_by_point(RECEIVE_GIFT_SUCCESS_CLOSE)
         if title_text == TITLE[23]:
             ctx.ctrl.click_by_point(UNLOCK_STORY_TO_HOME_PAGE)
+            ctx.ctrl.click_by_point(UNLOCK_STORY_TO_HOME_PAGE2)
         if title_text == TITLE[24]:
             ctx.ctrl.click_by_point(WIN_TIMES_NOT_ENOUGH_RETURN)
         if title_text == TITLE[25]:

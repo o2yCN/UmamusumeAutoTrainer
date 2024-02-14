@@ -17,7 +17,7 @@ from ..common.common import on_task as _on_task
 
 
 def dr_script_main_menu(ctx: UmamusumeContext):
-    if not daily_raced(ctx):
+    if not daily_raced(ctx) or ctx.daily_race_detail.raced:
         ctx.ctrl.click_by_point(TO_RACE)
         return
     if ctx.daily_race_detail.raced:
@@ -27,14 +27,14 @@ def dr_script_main_menu(ctx: UmamusumeContext):
 
 
 def dr_script_race_home(ctx: UmamusumeContext):
-    if daily_raced(ctx):
+    if daily_raced(ctx) or ctx.daily_race_detail.raced:
         ctx.ctrl.click_by_point(GO_HOME_FROM_RACE)
         return
     ctx.ctrl.click(200, 1050, "前往日常赛事")
 
 
 def script_daily_race_dr_home(ctx: UmamusumeContext):
-    if daily_raced(ctx):
+    if daily_raced(ctx) or ctx.daily_race_detail.raced:
         ctx.ctrl.click(80, 1080, "返回")
         return
     race = [REF_DAILY_RACE_MOONLIGHT, REF_DAILY_RACE_JUPITER][ctx.daily_race_detail.race]
@@ -50,11 +50,12 @@ def script_daily_race_dr_home(ctx: UmamusumeContext):
             ctx.ctrl.click(*match_result.center_point, "选择难度")
             break
         ctx.ctrl.swipe(360, 960, 360, 600, 500, "滑")
+        time.sleep(0.5)
     time.sleep(0.5)
 
 
 def script_daily_race_detail(ctx: UmamusumeContext):
-    if daily_raced(ctx):
+    if daily_raced(ctx) or ctx.daily_race_detail.raced:
         ctx.ctrl.click(200, 1180, "取消")
         return
     img = cv2.cvtColor(ctx.current_screen, cv2.COLOR_BGR2GRAY)
@@ -65,8 +66,13 @@ def script_daily_race_detail(ctx: UmamusumeContext):
 
 
 def script_daily_race_select_racer(ctx: UmamusumeContext):
-    if daily_raced(ctx):
-        ctx.ctrl.click(80, 1080, "返回")
+    if daily_raced(ctx) or ctx.daily_race_detail.raced:
+        ctx.ctrl.click(360, 1220, "回主页")
+        return
+    # 未触发限时特卖时有概率导致选择赛事和难度的页面左上确实选择参赛优骏少女，导致卡住。
+    img = cv2.cvtColor(ctx.current_screen, cv2.COLOR_BGR2RGB)
+    if not compare_color_equal(img[1080, 360], [131, 208, 8]):
+        ctx.ctrl.click(360, 1220, "回主页")
         return
     ctx.ctrl.click(360, 1080, "确认参赛选手")
 

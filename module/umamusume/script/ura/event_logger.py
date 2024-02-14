@@ -70,7 +70,6 @@ class EventLogger:
         if not cls.logging:
             return
         if cls.viewed > MAX_VIEW:
-            print("未发现变动")
             cls.log()
         cls.viewed += 1
         if cls.diff(context_copy(ctx).cultivate_detail.turn_info):

@@ -35,7 +35,7 @@ from module.umamusume.script.daily_race_task.race import (dr_script_main_menu,
                                                           script_daily_race_select_racer,
                                                           )
 from module.umamusume.script.daily_race_task.info import dr_script_info
-from module.umamusume.script.default import common_default_script
+from module.umamusume.script.common.common import script_common_not_found_ui
 from module.umamusume.protocol.preset import AddPresetRequest
 from module.umamusume.task import UmamusumeTaskType, build_task
 from module.umamusume.user_data import read_presets, write_preset
@@ -74,7 +74,7 @@ script_dicts: Dict[UmamusumeTaskType, dict] = {
         CULTIVATE_CATCH_DOLL_GAME_RESULT: script_cultivate_catch_doll_result,
         CULTIVATE_LEARN_SKILL: script_cultivate_learn_skill,
         CULTIVATE_FINISH: script_cultivate_finish,
-        NOT_FOUND_UI: script_not_found_ui,
+        NOT_FOUND_UI: script_common_not_found_ui,
         RECEIVE_CUP: script_receive_cup,
         GOAL_FAILED: script_cultivate_goal_failed,
         CULTIVATE_LEVEL_RESULT: script_cultivate_level_result,
@@ -128,7 +128,7 @@ script_dicts: Dict[UmamusumeTaskType, dict] = {
 
 default_script_dict: Dict[UI, callable] = {
     PRESS_START: lambda ctx: ctx.ctrl.click(719, 1, "Press start."),
-    NOT_FOUND_UI: common_default_script
+    NOT_FOUND_UI: script_common_not_found_ui
 }
 
 

@@ -67,6 +67,7 @@ class TurnInfo(Data):
     failRate: Array[int]
     skills: Array[Skill]
     skillTips: Array[SkillTip]
+    disable_skill_id_array: Array[int]
     chara_effect_id_array: Array[ConditionType]
     available_command_array: Array[CommandType]
     proper_info: Array[Array[int]]

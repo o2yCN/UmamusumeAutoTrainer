@@ -58,6 +58,9 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
             and not ctx.cultivate_detail.turn_info.turn_learn_skill_done):
         if len(ctx.cultivate_detail.learn_skill_list) > 0 or not ctx.cultivate_detail.learn_skill_only_user_provided:
             ctx.ctrl.click_by_point(CULTIVATE_SKILL_LEARN)
+        elif has_extra_race and ctx.cultivate_detail.learn_skill_before_race:
+            ctx.cultivate_detail.turn_info.racing = True
+            ctx.ctrl.click_by_point(CULTIVATE_SKILL_LEARN)
         else:
             ctx.cultivate_detail.learn_skill_done = True
             ctx.cultivate_detail.turn_info.turn_learn_skill_done = True
@@ -151,10 +154,12 @@ def script_main_menu(ctx: UmamusumeContext):
     if ctx.cultivate_detail.no_tp or (time.time() - ctx.task.detail.
        timestamp['no_tp'].get(ctx.task.device_name or "default", 0) < 300):
         ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.TP_NOT_ENOUGH)
-    # if ts := ctx.task.detail.timestamp['borrowed'].get(ctx.task.device_name or "default", 0):
-    #     import croniter
-    #     if time.time() < croniter.croniter("0 5 * * *", ts).get_next():
-    #         ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.BORROWED)
+        return
+    if ts := ctx.task.detail.timestamp['borrowed'].get(ctx.task.device_name or "default", 0):
+        import croniter
+        if time.time() < croniter.croniter("0 5 * * *", ts).get_next():
+            ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.BORROWED)
+            return
     ctx.ctrl.click_by_point(TO_CULTIVATE_SCENARIO_CHOOSE)
 
 
@@ -251,6 +256,10 @@ def script_cultivate_goal_race(ctx: UmamusumeContext):
             ctx.cultivate_detail.turn_info_history.append(ctx.cultivate_detail.turn_info)
         ctx.cultivate_detail.turn_info = TurnInfo()
         ctx.cultivate_detail.turn_info.date = current_date
+    ctx.cultivate_detail.turn_info.racing = True
+    if ctx.cultivate_detail.learn_skill_before_race and not ctx.cultivate_detail.turn_info.turn_learn_skill_done:
+        ctx.ctrl.click(205, 1080, "技能")
+        return
     ctx.ctrl.click_by_point(CULTIVATE_GOAL_RACE_INTER_1)
 
 

@@ -166,6 +166,7 @@ def ura_parse_skills(ctx: UmamusumeContext, info: TurnInfo):
         skill_hint_list.append(hint)
     ctx.cultivate_detail.turn_info.learnt_skill_list[:] = learnt_skill_list
     ctx.cultivate_detail.turn_info.skill_hint_list[:] = skill_hint_list
+    ctx.cultivate_detail.turn_info.disable_skill_id_array[:] = info.disable_skill_id_array
 
 
 def get_skill_name_by_id(skill_id):
@@ -270,7 +271,7 @@ def ura_get_event_choice_by_effect(ctx: UmamusumeContext) -> int:
     for c in choice_indices:
         if len(info.effect[c].all_effects) > 1:
             EventLogger.start(origin_ctx, info.triggerName, info.eventName, info.story_id, c, info.choices[c],
-                              info.select_indices[c], info.is_success[c], info.effect[c], len(info.choices))
+                              info.select_indices[c], info.is_success[c].value, info.effect[c], len(info.choices))
             return c + 1
     else:
         return choice_indices[0] + 1
