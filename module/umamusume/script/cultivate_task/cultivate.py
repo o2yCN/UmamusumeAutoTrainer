@@ -12,7 +12,7 @@ from module.umamusume.script.cultivate_task.event import Event
 from module.umamusume.script.cultivate_task.parse import *
 try:
     from module.umamusume.script.ura.cultivate import ura_parse_cultivate_main_menu, ura_get_event_choice_by_effect
-    from module.umamusume.script.ura.skill_ai import ura_script_cultivate_learn_skill
+    from module.umamusume.script.ura.skill_ai import ura_script_cultivate_learn_skill, ura_script_cultivate_get_skill_list
 except ImportError:
     def ura_get_event_choice_by_effect(ctx: UmamusumeContext):
         return
@@ -56,7 +56,12 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
 
     if (ctx.cultivate_detail.turn_info.uma_attribute.skill_point > ctx.cultivate_detail.learn_skill_threshold
             and not ctx.cultivate_detail.turn_info.turn_learn_skill_done):
-        if len(ctx.cultivate_detail.learn_skill_list) > 0 or not ctx.cultivate_detail.learn_skill_only_user_provided:
+        learn = ura_script_cultivate_get_skill_list(ctx, ctx.cultivate_detail.learn_skill_list,
+                                          ctx.cultivate_detail.learn_skill_blacklist)
+        if len(learn) == 0:
+            ctx.cultivate_detail.learn_skill_done = True
+            ctx.cultivate_detail.turn_info.turn_learn_skill_done = True
+        elif len(ctx.cultivate_detail.learn_skill_list) > 0 or not ctx.cultivate_detail.learn_skill_only_user_provided:
             ctx.ctrl.click_by_point(CULTIVATE_SKILL_LEARN)
         elif has_extra_race and ctx.cultivate_detail.learn_skill_before_race:
             ctx.cultivate_detail.turn_info.racing = True
@@ -155,11 +160,11 @@ def script_main_menu(ctx: UmamusumeContext):
        timestamp['no_tp'].get(ctx.task.device_name or "default", 0) < 300):
         ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.TP_NOT_ENOUGH)
         return
-    if ts := ctx.task.detail.timestamp['borrowed'].get(ctx.task.device_name or "default", 0):
-        import croniter
-        if time.time() < croniter.croniter("0 5 * * *", ts).get_next():
-            ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.BORROWED)
-            return
+    # if ts := ctx.task.detail.timestamp['borrowed'].get(ctx.task.device_name or "default", 0):
+    #     import croniter
+    #     if time.time() < croniter.croniter("0 5 * * *", ts).get_next():
+    #         ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.BORROWED)
+    #         return
     ctx.ctrl.click_by_point(TO_CULTIVATE_SCENARIO_CHOOSE)
 
 

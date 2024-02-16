@@ -259,7 +259,9 @@ class CultivateContextDetail:
     follow_support_card_level: int
     extra_race_list: list[int]
     learn_skill_list: list[list[str]]
+    learn_skill_data: list[list[object]] | None
     learn_skill_blacklist: list[str]
+    learn_skill_blacklist_data : list[object] | None
     learn_skill_done: bool
     learn_skill_selected: bool
     cultivate_finish: bool
@@ -309,6 +311,8 @@ class CultivateContextDetail:
         self.uma_rarity = 0
         self.no_tp = False
         self.borrowed = False
+        self.learn_skill_data = None
+        self.learn_skill_blacklist_data = None
 
     def reset_skill_learn(self):
         self.learn_skill_done = False

@@ -25,7 +25,7 @@ def script_common_not_found_ui(ctx: UmamusumeContext):
     else:
         ctx.task.detail.not_found_ui += 1
     set_timestamp(ctx, 'not_found_ui')
-    if ctx.task.detail.not_found_ui > 10:
+    if ctx.task.detail.not_found_ui > 20:
         ctx.ctrl.stop_app(ctx.task.app_name)
         time.sleep(5)
         ctx.ctrl.start_app(ctx.task.app_name)

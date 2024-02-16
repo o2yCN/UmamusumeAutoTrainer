@@ -10,6 +10,16 @@ log = logger.get_logger(__name__)
 DEBUG = True
 MAX_RETRY = 30
 
+def ura_script_cultivate_get_skill_list(ctx: UmamusumeContext, learn_skill_list: list[str | list[str]], learn_skill_blacklist: list[str]):
+    # 重置技能数据
+    if not (ctx.cultivate_detail.learn_skill_list == learn_skill_list and ctx.cultivate_detail.learn_skill_blacklist == learn_skill_blacklist):
+        ctx.cultivate_detail.learn_skill_data = None
+        ctx.cultivate_detail.learn_skill_blacklist_data = None
+    if ctx.cultivate_detail.learn_skill_data is None:
+       ctx.cultivate_detail.learn_skill_data = normalize_priority_and_blacklist(learn_skill_list)
+    if ctx.cultivate_detail.learn_skill_blacklist_data is None:
+        ctx.cultivate_detail.learn_skill_blacklist_data = normalize_priority_and_blacklist(learn_skill_blacklist)
+    return parse_skill_tips_response(ctx, ctx.cultivate_detail.learn_skill_data, ctx.cultivate_detail.learn_skill_blacklist_data)
 
 def ura_script_cultivate_learn_skill(ctx: UmamusumeContext,
                                      learn_skill_list: list[list[str]],
@@ -22,9 +32,10 @@ def ura_script_cultivate_learn_skill(ctx: UmamusumeContext,
     ctx.cultivate_detail.turn_info.log_turn_info(False, True)
     # 找出最佳技能
     target_skill_list = []
-    learn = parse_skill_tips_response(ctx,
-                                      normalize_priority_and_blacklist(learn_skill_list),
-                                      normalize_priority_and_blacklist(learn_skill_blacklist))
+    
+    learn = ura_script_cultivate_get_skill_list(ctx,
+                                      learn_skill_list,
+                                      learn_skill_blacklist)
     learnt_id = [x.skill_id for x in ctx.cultivate_detail.turn_info.learnt_skill_list]
     for skill in learn:
         if skill.rate == 2 and skill.rarity == 1:  # if "◎" in skill.name:

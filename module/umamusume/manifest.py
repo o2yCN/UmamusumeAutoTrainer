@@ -136,6 +136,8 @@ def exec_script(ctx: UmamusumeContext):
     if ctx.task.task_type in script_dicts:
         if ctx.current_ui in script_dicts[ctx.task.task_type]:
             script_dicts[ctx.task.task_type][ctx.current_ui](ctx)
+            if not ctx.current_ui in default_script_dict:
+                ctx.task.detail.not_found_ui = 0
             return
     if ctx.current_ui in default_script_dict:
         default_script_dict[ctx.current_ui](ctx)
