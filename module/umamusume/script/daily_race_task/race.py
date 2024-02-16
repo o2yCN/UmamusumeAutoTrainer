@@ -17,13 +17,12 @@ from ..common.common import on_task as _on_task
 
 
 def dr_script_main_menu(ctx: UmamusumeContext):
-    if not daily_raced(ctx) or ctx.daily_race_detail.raced:
-        ctx.ctrl.click_by_point(TO_RACE)
-        return
     if ctx.daily_race_detail.raced:
         ctx.task.end_task(TaskStatus.TASK_STATUS_SUCCESS, EndTaskReason.COMPLETE)
-    else:
+    elif daily_raced(ctx):
         ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.DAILY_RACED)
+    else:
+        ctx.ctrl.click_by_point(TO_RACE)
 
 
 def dr_script_race_home(ctx: UmamusumeContext):

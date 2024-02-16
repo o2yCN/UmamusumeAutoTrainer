@@ -73,7 +73,7 @@ class TrainingInfo:
         for c in self.support_card_info_list:
             if c.favor != SupportCardFavorLevel.SUPPORT_CARD_FAVOR_LEVEL_UNKNOWN:
                 text += "[支援卡名称：" + str(c.name) + "支援卡类型：" + str(
-                    c.card_type.name) + ", 支援卡羁绊阶段：" + str(c.favor.name) + "] "
+                    c.card_type) + ", 支援卡羁绊阶段：" + str(c.favor) + "] "
         text += "]"
         log.info(text)
 
@@ -163,10 +163,10 @@ class TurnOperation:
         self.race_id = 0
 
     def log_turn_operation(self):
-        log.info("本回合执行操作：%s", self.turn_operation_type.name)
-        log.info("本回合备选操作：%s", self.turn_operation_type_replace.name)
+        log.info("本回合执行操作：%s", self.turn_operation_type)
+        log.info("本回合备选操作：%s", self.turn_operation_type_replace)
         if self.turn_operation_type == TurnOperationType.TURN_OPERATION_TYPE_TRAINING:
-            log.info("训练类型：%s", self.training_type.name)
+            log.info("训练类型：%s", self.training_type)
 
 
 class TurnInfo:
@@ -226,7 +226,7 @@ class TurnInfo:
 
     def log_turn_info(self, full=True, show_skill_and_hint=False):
         log.info("当前回合时间 >" + str(self.date))
-        log.info("干劲状态 " + str(self.motivation_level.name))
+        log.info("干劲状态 " + str(self.motivation_level))
         log.info("体力剩余" + str(self.remain_stamina))
         log.info("当前属性值 速度：%s, 耐力：%s, 力量：%s, 毅力：%s, 智力：%s, 技能点：%s", self.uma_attribute.speed,
                  self.uma_attribute.stamina, self.uma_attribute.power, self.uma_attribute.will,
@@ -264,6 +264,7 @@ class CultivateContextDetail:
     learn_skill_blacklist_data : list[object] | None
     learn_skill_done: bool
     learn_skill_selected: bool
+    learn_skill_before_race_done: bool
     cultivate_finish: bool
     tactic_list: list[int]
     debut_race_win: bool
@@ -294,6 +295,7 @@ class CultivateContextDetail:
         self.learn_skill_blacklist = []
         self.learn_skill_done = False
         self.learn_skill_selected = False
+        self.learn_skill_before_race_done = False
         self.cultivate_finish = False
         self.tactic_list = []
         self.debut_race_win = False

@@ -20,13 +20,15 @@ def script_common_not_found_ui(ctx: UmamusumeContext):
     ctx.ctrl.click(719, 1, "")
     time.sleep(0.2)
     ts = get_timestamp(ctx, 'not_found_ui')
-    if not ts or time.time() - ts > 20:
+    if not ts or time.time() - ts > 3:
         ctx.task.detail.not_found_ui = 1
     else:
         ctx.task.detail.not_found_ui += 1
     set_timestamp(ctx, 'not_found_ui')
     if ctx.task.detail.not_found_ui > 20:
-        ctx.ctrl.stop_app(ctx.task.app_name)
+        from bot.base.manifest import APP_MANIFEST_LIST
+        manifest = APP_MANIFEST_LIST[ctx.task.app_name]
+        ctx.ctrl.stop_app(manifest.app_package_name)
         time.sleep(5)
-        ctx.ctrl.start_app(ctx.task.app_name)
+        ctx.ctrl.start_app(manifest.app_package_name)
         ctx.task.detail.not_found_ui = 0

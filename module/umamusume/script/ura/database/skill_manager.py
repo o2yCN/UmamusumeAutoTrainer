@@ -34,6 +34,12 @@ class SkillData(_Nameable):
         self.actual_grade = self.grade
 
     @property
+    def name_while_learning(self):
+        if self.rate == -1:
+            return "消除" + self.name
+        return self.name
+
+    @property
     def deconstruction(self):
         return self.group_id, self.rarity, self.rate
 
@@ -203,9 +209,7 @@ class SkillManagerGenerator:
                         # 带有负面技能（未消除），则其上位一定未学
                         # 仅在第一次遇到时操作
                         if inferior.grade > 0:
-                            print(inferior.name, skill.name, 'break')
                             break
-                        print(inferior.name, skill.name, 'action')
                         inferior.grade = -inferior.grade
                         superior = inferior.superior
                         while superior is not None:
@@ -352,14 +356,16 @@ class SkillManagerGenerator:
             if ctx.cultivate_detail.learn_skill_only_user_provided:
                 group_ids = set(x.group_id for level in target_list for x in level)
             elif ctx.cultivate_detail.learn_skill_before_race and ctx.cultivate_detail.turn_info.racing:
+                # 赛前仅学习第一级
                 group_ids = set(x.group_id for level in target_list[0:1] for x in level)
             else:
                 return tips
             for tip in tips:
                 if tip.group_id not in group_ids:
                     for dont_learn in skills.get_all_by_group_id(tip.group_id):
-                        dont_learn.cost = 9999999
-                        dont_learn.grade = -999999
+                        if dont_learn.rate > 0:  # 负面技能不剔除
+                            dont_learn.cost = 9999999
+                            dont_learn.grade = -999999
         return tips
 
     @staticmethod

@@ -1,3 +1,4 @@
+import time
 from module.umamusume.context import UmamusumeContext, TurnInfo
 from module.umamusume.define import Condition
 from ..cultivate_task.event.parse import EventEffect
@@ -77,7 +78,7 @@ class EventLogger:
 
     @classmethod
     def log(cls, extra_information=""):
-        log = ""
+        log = time.strftime('%Y-%m-%d %H:%M:%S\n', time.localtime(time.time()))
         log += f"来源：{cls.trigger_name}\n"
         log += f"事件名称：{cls.event_name}\n"
         log += f"选择选项{cls.choice_index}：{cls.choice_str}\n"

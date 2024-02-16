@@ -38,20 +38,15 @@ def ura_script_cultivate_learn_skill(ctx: UmamusumeContext,
                                       learn_skill_blacklist)
     learnt_id = [x.skill_id for x in ctx.cultivate_detail.turn_info.learnt_skill_list]
     for skill in learn:
-        if skill.rate == 2 and skill.rarity == 1:  # if "◎" in skill.name:
-            if skill.inferior.id in learnt_id:
-                # 已学单圈技能，正常
-                pass
-            else:
-                if skill.inferior.inferior is not None and skill.inferior.inferior.id in learnt_id:
-                    # ×技能在手
-                    target_skill_list.append("消除"+skill.inferior.inferior.name)
-                target_skill_list.append(skill.inferior.name)
-        if skill.rate == 1 and skill.rarity == 1:  # if "○" in skill.name AND OTHER:
-            if skill.inferior is not None and skill.inferior.id in learnt_id:
-                # ×技能在手
-                target_skill_list.append("消除"+skill.inferior.name)
-        target_skill_list.append(skill.name)
+        if skill.rate == 2 and skill.rarity == 1:  # "◎" skills
+            if skill.inferior.id not in learnt_id:  # "○" unlearn
+                if skill.inferior.inferior is not None and skill.inferior.inferior.id in learnt_id:  # got "×"
+                    target_skill_list.append(skill.inferior.inferior.name_while_learning)
+                target_skill_list.append(skill.inferior.name_while_learning)
+        if skill.rate == 1 and skill.rarity == 1:  # "○" and normal skills:
+            if skill.inferior is not None and skill.inferior.id in learnt_id:  # got "×"
+                target_skill_list.append(skill.inferior.name_while_learning)
+        target_skill_list.append(skill.name_while_learning)
 
     # 点技能
     import time
