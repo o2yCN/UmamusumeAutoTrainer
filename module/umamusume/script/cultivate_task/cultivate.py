@@ -66,6 +66,10 @@ def script_cultivate_main_menu(ctx: UmamusumeContext):
         elif has_extra_race and ctx.cultivate_detail.learn_skill_before_race:
             ctx.cultivate_detail.turn_info.racing = True
             ctx.ctrl.click_by_point(CULTIVATE_SKILL_LEARN)
+        elif has_extra_race and ctx.cultivate_detail.learn_skill_before_race \
+                and not ctx.cultivate_detail.learn_skill_before_race_done:
+            ctx.cultivate_detail.turn_info.racing = True
+            ctx.ctrl.click_by_point(CULTIVATE_SKILL_LEARN)
         else:
             ctx.cultivate_detail.learn_skill_done = True
             ctx.cultivate_detail.turn_info.turn_learn_skill_done = True
@@ -156,15 +160,6 @@ def script_main_menu(ctx: UmamusumeContext):
     if ctx.cultivate_detail.cultivate_finish:
         ctx.task.end_task(TaskStatus.TASK_STATUS_SUCCESS, EndTaskReason.COMPLETE)
         return
-    if ctx.cultivate_detail.no_tp or (time.time() - ctx.task.detail.
-       timestamp['no_tp'].get(ctx.task.device_name or "default", 0) < 300):
-        ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.TP_NOT_ENOUGH)
-        return
-    # if ts := ctx.task.detail.timestamp['borrowed'].get(ctx.task.device_name or "default", 0):
-    #     import croniter
-    #     if time.time() < croniter.croniter("0 5 * * *", ts).get_next():
-    #         ctx.task.end_task(TaskStatus.TASK_STATUS_FAILED, UEndTaskReason.BORROWED)
-    #         return
     ctx.ctrl.click_by_point(TO_CULTIVATE_SCENARIO_CHOOSE)
 
 
@@ -186,7 +181,7 @@ def script_extend_umamusume_select(ctx: UmamusumeContext):
     if ctx.cultivate_detail.no_tp or ctx.cultivate_detail.borrowed:
         ctx.ctrl.click(360, 1220, "返回主界面")
         return
-    img = ctx.ctrl.get_screen(to_gray=True)
+    img = ctx.ctrl.get_screen(to_gray=True)[700:900, 50:550]
     if image_match(img, REF_CULTIVATE_SUPPORT_CARD_EMPTY).find_match:
         ctx.cultivate_detail.borrowed = True
         ctx.task.detail.timestamp['borrowed'][ctx.task.device_name or "default"] = time.time()

@@ -219,9 +219,12 @@ class SkillManagerGenerator:
                         break
                     skill.grade -= inferior.grade
                     break
-                else:
+                elif inferior.rate > 0:
                     skill.cost += inferior.cost
                     inferior = inferior.inferior
+                else:
+                    inferior.superior.inferior = None
+                    break
         return SkillManager(skills)
 
     @staticmethod
