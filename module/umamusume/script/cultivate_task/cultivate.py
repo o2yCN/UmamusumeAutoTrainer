@@ -164,9 +164,9 @@ def script_main_menu(ctx: UmamusumeContext):
 
 
 def script_scenario_select(ctx: UmamusumeContext):
-    if ctx.cultivate_detail.no_tp or ctx.cultivate_detail.borrowed:
-        ctx.ctrl.click(360, 1220, "返回主界面")
-        return
+    # if ctx.cultivate_detail.no_tp or ctx.cultivate_detail.borrowed:
+    #     ctx.ctrl.click(360, 1220, "返回主界面")
+    #     return
     ctx.ctrl.click_by_point(TO_CULTIVATE_PREPARE_NEXT)
 
 
